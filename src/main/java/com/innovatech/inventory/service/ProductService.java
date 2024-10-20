@@ -3,18 +3,13 @@ package com.innovatech.inventory.service;
 import java.io.IOException; 
 import java.security.InvalidKeyException; 
 import java.security.NoSuchAlgorithmException; 
-import java.sql.Timestamp; 
 import java.util.List; 
-import java.util.Optional;
 
-import org.checkerframework.checker.units.qual.s; 
 import org.springframework.beans.factory.annotation.Autowired; 
 import org.springframework.data.domain.PageRequest; 
-import org.springframework.http.ResponseEntity; 
 import org.springframework.stereotype.Service;
 
 import com.innovatech.inventory.dto.ProductDTO;
-import com.innovatech.inventory.dto.ProductInfoDTO;
 import com.innovatech.inventory.entity.Product; 
 import com.innovatech.inventory.repository.ProductRepository;
 
@@ -27,9 +22,6 @@ import io.minio.errors.XmlParserException;
 
 
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProductService {
