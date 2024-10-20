@@ -1,0 +1,58 @@
+name: BUILD CI
+
+on:
+  pull_request:
+    branches:
+      - development  # Ejecutar workflow cuando se haga un pull request a 'development'
+      - main         # Ejecutar pruebas también cuando se haga un pull request a 'main'
+  push:
+    branches:
+      - development  # Ejecutar workflow cuando se haga push en 'development'
+      - main         # Ejecutar pruebas también cuando se haga push en 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: mvn clean install  # Ejecutar Maven desde la raíz
+
+      - name: Run tests
+        run: mvn test  # Ejecutar las pruebas desde la raíz
+
+  merge:
+    needs: build  # Solo si pasa el trabajo 'build'
+    runs-on: ubuntu-latest
+    if: success() && github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'development'
+  
+    steps:
+    - name: Merge pull request
+      run: |
+        curl -s -X PUT \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          -d '{"commit_title": "Automated merge from CI", "merge_method": "merge"}' \
+          "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/merge"
+  
+  reject:
+    needs: build  # Solo si falla el trabajo 'build'
+    runs-on: ubuntu-latest
+    if: failure() && github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'development'
+    
+    steps:
+    - name: Close pull request on failure
+      run: |
+        curl -s -X PATCH \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          -d '{"state": "closed"}' \
+          "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}"
