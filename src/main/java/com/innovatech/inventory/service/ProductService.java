@@ -42,9 +42,12 @@ public class ProductService {
     }
 
     public Product createProduct(ProductDTO newProductDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
+        
         Product product = new Product(newProductDto.getName(), newProductDto.getQuantity(), newProductDto.getPrice(), newProductDto.getCost(), newProductDto.getDescription(), "p-" + newProductDto.getId().toString());
+
         Product createdProduct = productRepository.save(product);
 
+        
         // Upload product image to MinIO
         uploadProductImage(createdProduct.getId(), newProductDto.getPicture());
 

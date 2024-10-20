@@ -1,5 +1,7 @@
 package com.innovatech.inventory.entity;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,7 +18,7 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false,unique = true)
     private String name;
 
     @Column(nullable = false)
@@ -42,4 +44,12 @@ public class Product {
         this.description = description;
         this.multimedia = multimedia;
     }
+
+    
+
+    // Relationship with table Order_Product
+    @OneToMany(mappedBy = "product")
+    private List<OrderProduct> orderProducts;
+
+
 }
