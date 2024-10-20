@@ -1,10 +1,13 @@
 package com.innovatech.inventory.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
-@Table(name = "Product")
 @Data
 @Getter
 @Setter
@@ -33,6 +36,10 @@ public class Product {
 
     @Column(nullable = false)
     private String multimedia;
+
+    @JsonIgnore
+    @ManyToMany(mappedBy = "products")
+    private List<Supplier> suppliers = new ArrayList<>();
 
     public Product(String name, Integer quantity, Double price, Double cost, String description, String multimedia) {
         this.name = name;
