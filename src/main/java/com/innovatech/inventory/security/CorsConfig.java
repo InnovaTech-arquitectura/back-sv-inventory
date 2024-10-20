@@ -1,6 +1,6 @@
-package com.innovatech.inventory.Security;
+package com.innovatech.inventory.security;
 
-import java.util.Arrays; // Import necessary class
+import java.util.Arrays; 
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
