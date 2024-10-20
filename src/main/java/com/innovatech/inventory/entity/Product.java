@@ -1,5 +1,7 @@
 package com.innovatech.inventory.entity;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,4 +44,10 @@ public class Product {
         this.description = description;
         this.multimedia = multimedia;
     }
+
+    // Relationship with table Order_Product
+    @OneToMany(mappedBy = "product")
+    private List<OrderProduct> orderProducts;
+
+
 }
