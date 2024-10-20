@@ -23,6 +23,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Export environment variables from ENV_VARS secret
+        run: |
+          echo "${{ secrets.ENV_VARS }}" > .env
+          export $(cat .env | xargs)
+
       - name: Build with Maven
         run: mvn clean install  # Ejecutar Maven desde la raíz
 
