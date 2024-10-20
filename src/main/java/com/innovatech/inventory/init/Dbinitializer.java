@@ -19,8 +19,6 @@ public class Dbinitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        
-
         System.out.println("Products have been initialized");
     }
     

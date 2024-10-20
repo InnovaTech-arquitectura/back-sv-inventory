@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.innovatech.inventory.dto.ServiceDTO;
+import com.innovatech.inventory.entity.Product;
 import com.innovatech.inventory.entity.ServiceS;  // Cambié ServiceS a Service
 import com.innovatech.inventory.repository.ServiceRepository; // Cambié ServiceRepositoryy a ServiceRepository
 
@@ -23,42 +24,65 @@ import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class ServiceService {
 
     @Autowired
-    private ServiceRepository serviceRepository;  // Ahora usa el nombre correcto
+    private ServiceRepository serviceRepository;
 
     @Autowired
     private MinioService minioService;
+
+    private static final Logger logger = LoggerFactory.getLogger(ServiceService.class);
 
     public ServiceS findService(Long id) {
         return serviceRepository.findById(id).orElseThrow(() -> new RuntimeException("Service not found"));
     }
 
-    public List<ServiceS> listServices(Integer page, Integer limit) {  // Cambié nombres para ser consistentes con 'Service'
+    public List<ServiceS> listServices(Integer page, Integer limit) {
         PageRequest pageable = PageRequest.of(page - 1, limit);
         return serviceRepository.findAll(pageable).getContent();
     }
 
     public ServiceS createService(ServiceDTO newServiceDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException, ParseException {
-        ServiceS service = new ServiceS(newServiceDto.getName(),newServiceDto.getPrice(),new SimpleDateFormat("yyyy-MM-dd").parse(newServiceDto.getInitialDate()),new SimpleDateFormat("yyyy-MM-dd").parse(newServiceDto.getFinalDate()),newServiceDto.getDescription(),"s-" + newServiceDto.getId().toString());
+        logger.info("Inside createService method");
+        logger.info("Creating service with name: {}", newServiceDto.getName());
+
+        // Verificar si ya existe un servicio con el mismo nombre
+        serviceRepository.findByName(newServiceDto.getName()).ifPresent(service -> {
+            logger.error("Service with name '{}' already exists", newServiceDto.getName());
+            throw new RuntimeException("There is already a service with the same name");
+        });
+
+        // Crear el nuevo servicio sin el campo multimedia (se asigna después)
+        ServiceS service = new ServiceS(newServiceDto.getName(), newServiceDto.getPrice(), 
+                new SimpleDateFormat("yyyy-MM-dd").parse(newServiceDto.getInitialDate()), 
+                new SimpleDateFormat("yyyy-MM-dd").parse(newServiceDto.getFinalDate()), 
+                newServiceDto.getDescription());
+
+            service.setMultimedia("temporary");
         
+        logger.info("Saving service with name: {}", service.getName());
+        logger.info("before All products {}", serviceRepository.findAll());
+
         ServiceS createdService = serviceRepository.save(service);
+        logger.info("Service created successfully with ID: {}", createdService.getId());
 
-
-        // Guardar el servicio nuevamente con el campo de imagen actualizado
+       createdService.setMultimedia("s-" + createdService.getId().toString());
         serviceRepository.save(createdService);
+        logger.info("Service updated with multimedia: {}", createdService.getMultimedia());
 
         // Subir la imagen a MinIO
         uploadServiceImage(createdService.getId(), newServiceDto.getPicture());
+        logger.info("Image uploaded successfully for service with ID: {}", createdService.getId());
 
         return createdService;
     }
 
     public ServiceS editService(Long id, ServiceDTO editedServiceDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException, ParseException {
-        // Encontrar el servicio que se va a editar
         ServiceS service = serviceRepository.findById(id).orElseThrow(() -> new RuntimeException("Service not found"));
 
         // Actualizar los campos
@@ -67,9 +91,8 @@ public class ServiceService {
         service.setInitialDate(new SimpleDateFormat("yyyy-MM-dd").parse(editedServiceDto.getInitialDate()));
         service.setFinalDate(new SimpleDateFormat("yyyy-MM-dd").parse(editedServiceDto.getFinalDate()));
         service.setDescription(editedServiceDto.getDescription());
-        service.setMultimedia("s-" + id.toString()); // Actualizar el nombre del archivo multimedia
+        service.setMultimedia("s-" + id.toString());
 
-        // Guardar los cambios
         ServiceS updatedService = serviceRepository.save(service);
 
         // Subir la imagen actualizada a MinIO
@@ -88,13 +111,13 @@ public class ServiceService {
             throw new RuntimeException("Error deleting image", e);
         }
 
-        // Eliminar el servicio de la base de datos
         serviceRepository.delete(service);
     }
 
-    // Helper method para subir la imagen del servicio a MinIO
+    // Método auxiliar para subir la imagen del servicio a MinIO
     private void uploadServiceImage(Long serviceId, MultipartFile picture) throws IOException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
         String fileName = "s-" + serviceId;  // Usar el ID del servicio como parte del nombre del archivo
+        logger.info("Uploading image for service with ID: {}", serviceId);
         minioService.uploadFile(fileName, picture);
     }
 }

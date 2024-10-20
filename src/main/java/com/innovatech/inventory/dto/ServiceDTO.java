@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ServiceDTO {
-    private Long id; 
     private String name;
     private double price;
     private String initialDate;  // Cambiar a String

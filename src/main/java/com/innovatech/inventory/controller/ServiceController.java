@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -48,7 +50,7 @@ public class ServiceController {
     @Autowired
     private MinioService minioService;
 
-
+ private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
     @GetMapping("/all")
     public ResponseEntity<?> listServices(@RequestParam(defaultValue = "1") Integer page,
@@ -98,26 +100,35 @@ public class ServiceController {
 
     @PostMapping("/new")
     public ResponseEntity<?> createService(@ModelAttribute ServiceDTO newServiceDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException, ParseException {
+        logger.info("Received request to create a new service with name: {}", newServiceDto.getName());
+    
         try {
-            newServiceDto.setId(0l);
+            // Crear el servicio
             ServiceS newService = serviceService.createService(newServiceDto);
-
+            logger.info("Service created successfully with ID: {}", newService.getId());
+    
+            // Subir la imagen del servicio a MinIO
             try {
                 minioService.uploadFile("s-" + newService.getId().toString(), newServiceDto.getPicture());
+                logger.info("Image uploaded successfully for service with ID: {}", newService.getId());
             } catch (IOException e) {
+                logger.error("Error uploading image for service with ID: {}", newService.getId(), e);
                 serviceService.deleteService(newService.getId());
                 throw new RuntimeException(e);
             } catch (Exception e) {
+                logger.error("Error during file upload for service with ID: {}", newService.getId(), e);
                 serviceService.deleteService(newService.getId());
                 return ResponseEntity.badRequest().body("Error uploading photo");
             }
-
+    
+            // Respuesta exitosa con el nuevo servicio
             return ResponseEntity.ok(newService);
         } catch (DataIntegrityViolationException e) {
+            logger.error("Service with name '{}' already exists", newServiceDto.getName());
             return ResponseEntity.status(HttpStatus.CONFLICT).body("There is already a service with the same name");
         }
     }
-
+    
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteService(@PathVariable Long id) {
         try {

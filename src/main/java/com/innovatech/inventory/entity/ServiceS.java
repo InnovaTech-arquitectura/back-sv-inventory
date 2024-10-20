@@ -43,13 +43,12 @@ public class ServiceS {
     @Column(nullable = false)
     private String multimedia;
 
-    public ServiceS(String name, Double price, Date initialDate, Date finalDate, String description, String multimedia) {
+    public ServiceS(String name, Double price, Date initialDate, Date finalDate, String description) {
         this.name = name;
         this.price = price;
         this.initialDate = initialDate;
         this.finalDate = finalDate;
         this.description = description;
-        this.multimedia = multimedia;
        
     }
 
