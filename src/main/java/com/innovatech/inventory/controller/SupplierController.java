@@ -35,8 +35,7 @@ public class SupplierController {
         try {
             return ResponseEntity.ok(supplierService.createSupplier(newSupplierDTO));
         } catch (Exception e) {
-            //return ResponseEntity.badRequest().body("Error creating supplier");
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body("Error creating supplier");
         }
     }
 
