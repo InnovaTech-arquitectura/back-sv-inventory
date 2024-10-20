@@ -66,6 +66,7 @@ public class ProductService {
     
         // Establecer un valor temporal para multimedia antes de guardar
         product.setMultimedia("temporary");
+        product.setIdEntrepreneurship( newProductDto.getIdEntrepreneurship());
     
         logger.info("Saving product with name: {}", product.getName());
         logger.info("before All products {}", productRepository.findAll());

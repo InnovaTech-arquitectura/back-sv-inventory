@@ -20,8 +20,8 @@ public class ServiceS {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //@Column(nullable = false)
-  //  private Long idEntrepreneurship; // Referencia al emprendimiento (clave foránea)
+    @Column(nullable = false)
+    private Long idEntrepreneurship; // Referencia al emprendimiento (clave foránea)
 
     @Column(nullable = false, unique = true)
     private String name;

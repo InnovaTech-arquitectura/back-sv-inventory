@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ServiceDTO {
     private String name;
+    private Long idEntrepreneurship;
     private double price;
     private String initialDate;  // Cambiar a String
     private String finalDate; 

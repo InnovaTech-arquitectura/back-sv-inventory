@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProductDTO {
     private String name;
+    private Long idEntrepreneurship;
     private int quantity;
     private double price;
     private double cost;

@@ -62,7 +62,8 @@ public class ServiceService {
                 new SimpleDateFormat("yyyy-MM-dd").parse(newServiceDto.getInitialDate()), 
                 new SimpleDateFormat("yyyy-MM-dd").parse(newServiceDto.getFinalDate()), 
                 newServiceDto.getDescription());
-
+                
+            service.setIdEntrepreneurship(newServiceDto.getIdEntrepreneurship());
             service.setMultimedia("temporary");
         
         logger.info("Saving service with name: {}", service.getName());

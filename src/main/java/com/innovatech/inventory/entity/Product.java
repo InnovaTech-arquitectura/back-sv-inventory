@@ -23,6 +23,9 @@ public class Product {
     private String name;
 
     @Column(nullable = false)
+    private Long idEntrepreneurship;
+
+    @Column(nullable = false)
     private Integer quantity;
 
     @Column(nullable = false)
