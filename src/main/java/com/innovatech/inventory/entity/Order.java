@@ -46,11 +46,11 @@ public class Order {
 
     // Relationship with table Service
     // TODO: Service entity is not defined yet
-    // @ManyToMany
-    // @JoinTable(
-    //     name = "Order_Product", // Name of the intermediate table
-    //     joinColumns = @JoinColumn(name = "id_order"), // Foreign key to Order
-    //     inverseJoinColumns = @JoinColumn(name = "id_product") // Foreign key to Product
-    // )
-    // private List<Service> services;
+     @ManyToMany
+     @JoinTable(
+         name = "Order_Product", // Name of the intermediate table
+        joinColumns = @JoinColumn(name = "id_order"), // Foreign key to Order
+         inverseJoinColumns = @JoinColumn(name = "id_product") // Foreign key to Product
+     )
+     private List<ServiceS> services;
 }

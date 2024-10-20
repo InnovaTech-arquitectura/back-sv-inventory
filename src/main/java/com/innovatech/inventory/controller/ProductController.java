@@ -94,16 +94,16 @@ public class ProductController{
     public ResponseEntity<?> createProduct(@ModelAttribute ProductDTO newProductDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
         try {
             
-           // newProductDto.setId(0l);
+            newProductDto.setId(0l);
             Product newProduct = productService.createProduct(newProductDto);
-                
+            
             try {
                 minioService.uploadFile("p-" + newProduct.getId().toString(), newProductDto.getPicture());
             } catch (IOException e) {
                 productService.deleteProduct(newProduct.getId());
                 throw new RuntimeException(e);
             } catch (Exception e) {
-                productService.deleteProduct(newProduct.getId());
+                productService.deleteProduct(newProduct.getId()); 
                 return ResponseEntity.badRequest().body("Error uploading photo");
             }
 

@@ -99,6 +99,7 @@ public class ServiceController {
     @PostMapping("/new")
     public ResponseEntity<?> createService(@ModelAttribute ServiceDTO newServiceDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException, ParseException {
         try {
+            newServiceDto.setId(0l);
             ServiceS newService = serviceService.createService(newServiceDto);
 
             try {

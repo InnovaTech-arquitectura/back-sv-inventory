@@ -36,13 +36,13 @@ public class Product {
     @Column(nullable = false)
     private String multimedia;
 
-    public Product(String name, Integer quantity, Double price, Double cost, String description, String multimedia) {
+    public Product(String name, Integer quantity, Double price, Double cost, String description) {
         this.name = name;
         this.quantity = quantity;
         this.price = price;
         this.cost = cost;
         this.description = description;
-        this.multimedia = multimedia;
+       // this.multimedia = multimedia;
     }
 
     
