@@ -135,16 +135,16 @@ CREATE TABLE innovatech.review (
 );
 
 CREATE TABLE innovatech.product (
-                                    id SERIAL PRIMARY KEY,
-                                    id_entrepreneurship INTEGER,
-                                    quantity INTEGER,
-                                    price DOUBLE PRECISION,
-                                    cost DOUBLE PRECISION,
-                                    picture VARCHAR,
-                                    description VARCHAR,
-                                    id_color INTEGER,
-                                    id_size INTEGER
-);
+                                     id SERIAL PRIMARY KEY,
+                                     id_entrepreneurship INT,
+                                     name VARCHAR(100),
+                                     quantity INT,
+                                     price DOUBLE PRECISION,
+                                     cost DOUBLE PRECISION,
+                                     picture VARCHAR(255),
+                                     description VARCHAR(255),
+                                    FOREIGN KEY (id_entrepreneurship) REFERENCES Entrepreneurship(id) ON DELETE CASCADE,
+                                         );
 
 CREATE TABLE innovatech.coupon (
                                    id SERIAL PRIMARY KEY,
