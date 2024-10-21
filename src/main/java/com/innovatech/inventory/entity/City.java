@@ -23,19 +23,21 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class City {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column
+    @Column(nullable = false)
     private String name;
 
-    // Relationship with table State
+    // Relación con la tabla State
     @ManyToOne
     @JoinColumn(name = "id_state", referencedColumnName = "id")
     private State state;
 
-    // Relationship with table Order
+    // Relación con la tabla Order
     @OneToMany(mappedBy = "city")
     private List<Order> orders;
 }
+

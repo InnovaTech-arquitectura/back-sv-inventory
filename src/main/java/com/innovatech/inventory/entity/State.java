@@ -25,11 +25,11 @@ public class State {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column
+    @Column(nullable = false)
     private String name;
 
-    // Relationship with table City
+    // Relación con la tabla City
     @OneToMany(mappedBy = "state")
     private List<City> cities;
-    
 }
+

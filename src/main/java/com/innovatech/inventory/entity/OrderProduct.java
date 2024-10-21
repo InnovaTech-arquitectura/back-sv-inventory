@@ -2,6 +2,8 @@ package com.innovatech.inventory.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -20,21 +22,21 @@ import lombok.NoArgsConstructor;
 public class OrderProduct {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // Añadimos esta anotación
     private long id;
 
-    // Relationship with order
+    // Relación con la tabla Order
     @ManyToOne
-    @JoinColumn(name = "id_order", referencedColumnName = "id")
+    @JoinColumn(name = "id_order", referencedColumnName = "id", nullable = false)
     private Order order;
 
-    // Relationship with product
+    // Relación con la tabla Product
     @ManyToOne
-    @JoinColumn(name = "id_product", referencedColumnName = "id")
+    @JoinColumn(name = "id_product", referencedColumnName = "id", nullable = false)
     private Product product;
 
-    @Column
+    @Column(nullable = false)
     private Integer quantity;
 
-
-    
 }
+
