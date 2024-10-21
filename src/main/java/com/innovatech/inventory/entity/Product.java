@@ -23,9 +23,6 @@ public class Product {
     private String name;
 
     @Column(nullable = false)
-    private Long idEntrepreneurship;
-
-    @Column(nullable = false)
     private Integer quantity;
 
     @Column(nullable = false)
@@ -41,8 +38,9 @@ public class Product {
     private String multimedia;
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "products")
-    private List<Supplier> suppliers = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "id_entrepreneurship", nullable = false)
+    private Entrepreneurship entrepreneurship;
 
     public Product(String name, Integer quantity, Double price, Double cost, String description) {
         this.name = name;
@@ -53,7 +51,6 @@ public class Product {
        // this.multimedia = multimedia;
     }
 
-    
 
     // Relationship with table Order_Product
     @OneToMany(mappedBy = "product")

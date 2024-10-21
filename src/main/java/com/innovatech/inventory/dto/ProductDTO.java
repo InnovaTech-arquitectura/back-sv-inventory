@@ -1,6 +1,7 @@
 package com.innovatech.inventory.dto;
 
 import org.springframework.web.multipart.MultipartFile;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProductDTO {
     private String name;
-    private Long idEntrepreneurship;
     private int quantity;
     private double price;
     private double cost;
@@ -18,4 +18,5 @@ public class ProductDTO {
     
     // Para la imagen del producto (subida desde el cliente)
     private MultipartFile picture;  
+    private Long idEntrepreneurship;
 }

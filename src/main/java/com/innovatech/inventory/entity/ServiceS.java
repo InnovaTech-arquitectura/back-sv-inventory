@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Date;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,9 +21,6 @@ public class ServiceS {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false)
-    private Long idEntrepreneurship; // Referencia al emprendimiento (clave foránea)
 
     @Column(nullable = false, unique = true)
     private String name;
@@ -42,6 +41,11 @@ public class ServiceS {
 
     @Column(nullable = false)
     private String multimedia;
+    
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "id_entrepreneurship", nullable = false)
+    private Entrepreneurship entrepreneurship;
 
     public ServiceS(String name, Double price, Date initialDate, Date finalDate, String description) {
         this.name = name;
@@ -51,5 +55,6 @@ public class ServiceS {
         this.description = description;
        
     }
+    
 
 }

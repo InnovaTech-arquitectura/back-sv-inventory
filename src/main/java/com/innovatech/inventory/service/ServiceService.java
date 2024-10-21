@@ -12,9 +12,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.innovatech.inventory.dto.ServiceDTO;
+import com.innovatech.inventory.entity.Entrepreneurship;
 import com.innovatech.inventory.entity.Product;
 import com.innovatech.inventory.entity.ServiceS;  // Cambié ServiceS a Service
 import com.innovatech.inventory.repository.ServiceRepository; // Cambié ServiceRepositoryy a ServiceRepository
+import com.innovatech.inventory.repository.EntrepreneurshipRepository; // Added import for EntrepreneurshipRepository
 
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
@@ -35,6 +37,9 @@ public class ServiceService {
 
     @Autowired
     private MinioService minioService;
+
+    @Autowired
+    private EntrepreneurshipRepository entrepreneurshipRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceService.class);
 
@@ -62,8 +67,11 @@ public class ServiceService {
                 new SimpleDateFormat("yyyy-MM-dd").parse(newServiceDto.getInitialDate()), 
                 new SimpleDateFormat("yyyy-MM-dd").parse(newServiceDto.getFinalDate()), 
                 newServiceDto.getDescription());
+               // logger.info("All emprendimientos: {}", entrepreneurshipRepository.findAll());
+                Entrepreneurship entrepreneurship = entrepreneurshipRepository.findById(newServiceDto.getIdEntrepreneurship())
+    .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + newServiceDto.getIdEntrepreneurship()));
                 
-            service.setIdEntrepreneurship(newServiceDto.getIdEntrepreneurship());
+            service.setEntrepreneurship(entrepreneurship);
             service.setMultimedia("temporary");
         
         logger.info("Saving service with name: {}", service.getName());
