@@ -9,17 +9,23 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.innovatech.inventory.entity.Product;
+import com.innovatech.inventory.entity.Sales;
 import com.innovatech.inventory.repository.ProductRepository;
+import com.innovatech.inventory.repository.SalesRepository;
 
 @Component
 public class Dbinitializer implements CommandLineRunner {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private SalesRepository saleRepository;
+
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-         List<Product> products = new ArrayList<>();
+        List<Product> products = new ArrayList<>();
         products.add(new Product("Product 1", 10, 100.0, 50.0, "Description of Product 1", "p-1"));
         products.add(new Product("Product 2", 20, 200.0, 100.0, "Description of Product 2", "p-2"));
         products.add(new Product("Product 3", 30, 300.0, 150.0, "Description of Product 3", "p-3"));
@@ -30,7 +36,16 @@ public class Dbinitializer implements CommandLineRunner {
             productRepository.save(product);
         }
 
-        System.out.println("Products have been initialized");
+        // Inicialización de ventas
+        List<Sales> sales = new ArrayList<>();
+        sales.add(new Sales(products.get(0), 5)); // 5 unidades del Product 1
+        sales.add(new Sales(products.get(1), 3)); // 3 unidades del Product 2
+        sales.add(new Sales(products.get(2), 10)); // 10 unidades del Product 3
+
+        for (Sales sale : sales) {
+            saleRepository.save(sale);
+        }
+
+        System.out.println("Products and Sales have been initialized");
     }
-    
 }
