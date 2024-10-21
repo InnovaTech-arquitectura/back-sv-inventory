@@ -2,24 +2,29 @@ package com.innovatech.inventory.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "Orders")
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Order {
 
     @Id
@@ -35,22 +40,22 @@ public class Order {
     @Column
     private String address;
 
-    // Relationship with table Order_State
+    // Relación con la tabla OrderState
     @ManyToOne
     @JoinColumn(name = "id_state", referencedColumnName = "id")
     private OrderState orderState;
 
-    // Relationship with table Order_Product
-    @OneToMany(mappedBy = "order")
+    // Relación con la tabla OrderProduct
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderProduct> orderProducts;
 
-    // Relationship with table Service
-    // TODO: Service entity is not defined yet
-     @ManyToMany
-     @JoinTable(
-         name = "Order_Product", // Name of the intermediate table
-        joinColumns = @JoinColumn(name = "id_order"), // Foreign key to Order
-         inverseJoinColumns = @JoinColumn(name = "id_product") // Foreign key to Product
-     )
-     private List<ServiceS> services;
+    // Relación con la tabla City
+    @ManyToOne
+    @JoinColumn(name = "id_city", referencedColumnName = "id")
+    private City city;
+
+    // Relación con la tabla OrderServiceEntity
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderServiceEntity> orderServices;
 }
+
