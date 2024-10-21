@@ -1,9 +1,5 @@
 package com.innovatech.inventory.entity;
-
-import java.util.ArrayList;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,23 +14,22 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "Order_State")
+@Table(name = "State")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderState {
+public class State {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(nullable = false)
-    private String state;
+    private String name;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "orderState")
-    @Builder.Default
-    private List<Order> orders = new ArrayList<>();
+    // Relación con la tabla City
+    @OneToMany(mappedBy = "state")
+    private List<City> cities;
 }
 
