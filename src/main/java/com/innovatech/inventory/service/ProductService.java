@@ -11,7 +11,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.innovatech.inventory.dto.ProductDTO;
-import com.innovatech.inventory.entity.Product; 
+import com.innovatech.inventory.entity.Entrepreneurship;
+import com.innovatech.inventory.entity.Product;
+import com.innovatech.inventory.repository.EntrepreneurshipRepository;
 import com.innovatech.inventory.repository.ProductRepository;
 
 import io.minio.errors.ErrorResponseException; 
@@ -36,6 +38,9 @@ public class ProductService {
 
     @Autowired
     private MinioService minioService;
+
+    @Autowired
+    private EntrepreneurshipRepository entrepreneurshipRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
@@ -63,10 +68,11 @@ public class ProductService {
     
         // Crear el nuevo producto, asignando un valor temporal para multimedia
         Product product = new Product(newProductDto.getName(), newProductDto.getQuantity(), newProductDto.getPrice(), newProductDto.getCost(), newProductDto.getDescription());
-    
+    Entrepreneurship entrepreneurship = entrepreneurshipRepository.findById(newProductDto.getIdEntrepreneurship())
+    .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + newProductDto.getIdEntrepreneurship()));
         // Establecer un valor temporal para multimedia antes de guardar
         product.setMultimedia("temporary");
-        product.setIdEntrepreneurship( newProductDto.getIdEntrepreneurship());
+        product.setEntrepreneurship(entrepreneurship);
     
         logger.info("Saving product with name: {}", product.getName());
         logger.info("before All products {}", productRepository.findAll());
