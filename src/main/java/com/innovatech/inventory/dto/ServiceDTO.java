@@ -1,22 +1,27 @@
 package com.innovatech.inventory.dto;
 
-import org.springframework.web.multipart.MultipartFile;
 import javax.validation.constraints.NotNull;
+
+import org.springframework.web.multipart.MultipartFile;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductDTO {
+public class ServiceDTO {
     private String name;
-    private int quantity;
     private double price;
-    private double cost;
+    private String initialDate;  // Cambiar a String
+    private String finalDate; 
     private String description;
-    
-    // Para la imagen del producto (subida desde el cliente)
-    private MultipartFile picture;  
+
+    // Para la imagen del servicio (subida desde el cliente)
+    private MultipartFile picture;
+
+     
     private Long idEntrepreneurship;
 }

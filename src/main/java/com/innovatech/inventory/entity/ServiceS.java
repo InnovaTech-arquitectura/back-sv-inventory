@@ -1,59 +1,60 @@
 package com.innovatech.inventory.entity;
 
+import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.util.Date;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
+@Table(name = "Service")
 @Data
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product {
-
+public class ServiceS {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false,unique = true)
+    @Column(nullable = false, unique = true)
     private String name;
-
-    @Column(nullable = false)
-    private Integer quantity;
 
     @Column(nullable = false)
     private Double price;
 
     @Column(nullable = false)
-    private Double cost;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date initialDate;
+
+    @Column(nullable = false)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date finalDate;
 
     @Column(nullable = false)
     private String description;
 
     @Column(nullable = false)
     private String multimedia;
-
+    
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_entrepreneurship", nullable = false)
     private Entrepreneurship entrepreneurship;
 
-    public Product(String name, Integer quantity, Double price, Double cost, String description) {
+    public ServiceS(String name, Double price, Date initialDate, Date finalDate, String description) {
         this.name = name;
-        this.quantity = quantity;
         this.price = price;
-        this.cost = cost;
+        this.initialDate = initialDate;
+        this.finalDate = finalDate;
         this.description = description;
-       // this.multimedia = multimedia;
+       
     }
-
-    // Relationship with table Order_Product
-    @OneToMany(mappedBy = "product")
-    private List<OrderProduct> orderProducts;
-
+    
 
 }

@@ -1,6 +1,5 @@
 package com.innovatech.inventory.init;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,29 +7,35 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.innovatech.inventory.entity.Product;
-import com.innovatech.inventory.repository.ProductRepository;
+import com.innovatech.inventory.entity.Entrepreneurship;
+import com.innovatech.inventory.repository.EntrepreneurshipRepository;
 
 @Component
 public class Dbinitializer implements CommandLineRunner {
 
     @Autowired
-    private ProductRepository productRepository;
+    private EntrepreneurshipRepository entrepreneurshipRepository;
+
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-         List<Product> products = new ArrayList<>();
-        products.add(new Product("Product 1", 10, 100.0, 50.0, "Description of Product 1", "p-1"));
-        products.add(new Product("Product 2", 20, 200.0, 100.0, "Description of Product 2", "p-2"));
-        products.add(new Product("Product 3", 30, 300.0, 150.0, "Description of Product 3", "p-3"));
-        products.add(new Product("Product 4", 40, 400.0, 200.0, "Description of Product 4", "p-4"));
-        products.add(new Product("Product 5", 50, 500.0, 250.0, "Description of Product 5", "p-5"));
+        // Verificar si la base de datos ya contiene emprendimientos
+        if (entrepreneurshipRepository.count() == 0) {
+            System.out.println("Initializing database with sample Entrepreneurship data...");
 
-        for (Product product : products) {
-            productRepository.save(product);
+            // Crear una lista de emprendimientos
+            List<Entrepreneurship> entrepreneurshipList = List.of(
+                new Entrepreneurship("Tech Solutions", "tech_logo.png", "Tech company providing innovative solutions", "John", "Doe"),
+                new Entrepreneurship("Creative Designs", "design_logo.png", "Graphic and web design services", "Jane", "Smith"),
+                new Entrepreneurship("Healthy Eats", "healthy_logo.png", "Organic and healthy food products", "Emily", "Davis")
+            );
+
+            // Guardar los emprendimientos en la base de datos
+            entrepreneurshipRepository.saveAll(entrepreneurshipList);
+
+            System.out.println("Entrepreneurships have been initialized");
+        } else {
+            System.out.println("Entrepreneurship data already exists");
         }
-
-        System.out.println("Products have been initialized");
     }
-    
 }
