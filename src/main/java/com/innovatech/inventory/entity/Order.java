@@ -8,8 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -43,6 +41,11 @@ public class Order {
     // Relationship with table Order_Product
     @OneToMany(mappedBy = "order")
     private List<OrderProduct> orderProducts;
+
+    // Relationship with table City
+    @ManyToOne
+    @JoinColumn(name = "id_city", referencedColumnName = "id")
+    private City city;
 
     // Relationship with table Service
     // TODO: Service entity is not defined yet
