@@ -136,4 +136,21 @@ public class SupplierControllerTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
+
+    @Test
+    public void testDeleteSupplier() {
+        // Arrange
+        Supplier supplier1 = new Supplier();
+        supplier1 = Supplier.builder()
+                .id(1L)
+                .name("Supplier 1")
+                .description("Supplier 1 description")
+                .contact_number("1234567890")
+                .build();
+        Mockito.when(supplierService.getSupplierById(1L)).thenReturn(supplier1);
+        // Act
+        ResponseEntity<?> response = supplierController.deleteSupplier(1L);
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
 }

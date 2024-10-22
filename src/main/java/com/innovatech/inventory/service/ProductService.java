@@ -24,16 +24,15 @@ import io.minio.errors.InternalException;
 import io.minio.errors.InvalidResponseException; 
 import io.minio.errors.ServerException; 
 import io.minio.errors.XmlParserException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import org.slf4j.Logger;
 
 
 
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-public class ProductService {
+public class ProductService implements CrudService<Product, Long> {
 
     @Autowired
     private ProductRepository productRepository;
@@ -44,8 +43,25 @@ public class ProductService {
     @Autowired
     private EntrepreneurshipRepository entrepreneurshipRepository;
 
+
     @Autowired
     private UserRepository userRepository;
+
+    @Override
+    public Product findById(Long id) {
+        return productRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        productRepository.deleteById(id);
+    }
+
+    @Override
+    public Product save(Product product) {
+        return productRepository.save(product);
+    }
+
 
     private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
