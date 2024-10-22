@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import com.innovatech.inventory.dto.ServiceDTO;
 import com.innovatech.inventory.entity.Entrepreneurship;
-import com.innovatech.inventory.entity.Product;
 import com.innovatech.inventory.entity.ServiceS;  // Cambié ServiceS a Service
 import com.innovatech.inventory.entity.UserEntity;
 import com.innovatech.inventory.repository.ServiceRepository; // Cambié ServiceRepositoryy a ServiceRepository
@@ -32,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Service
-public class ServiceService {
+public class ServiceService implements CrudService<ServiceS, Long> { // Cambié ServiceS a Service
 
     @Autowired
     private ServiceRepository serviceRepository;
@@ -45,6 +44,21 @@ public class ServiceService {
 
     @Autowired
     private UserRepository UserRepository;
+
+    @Override
+    public ServiceS findById(Long id) {
+        return serviceRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        serviceRepository.deleteById(id);
+    }
+
+    @Override
+    public ServiceS save(ServiceS service) {
+        return serviceRepository.save(service);
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceService.class);
 
