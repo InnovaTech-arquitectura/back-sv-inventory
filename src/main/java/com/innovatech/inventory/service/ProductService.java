@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 import com.innovatech.inventory.dto.ProductDTO;
 import com.innovatech.inventory.entity.Entrepreneurship;
 import com.innovatech.inventory.entity.Product;
+import com.innovatech.inventory.entity.UserEntity;
 import com.innovatech.inventory.repository.EntrepreneurshipRepository;
 import com.innovatech.inventory.repository.ProductRepository;
+import com.innovatech.inventory.repository.UserRepository;
 
 import io.minio.errors.ErrorResponseException; 
 import io.minio.errors.InsufficientDataException; 
@@ -57,6 +59,9 @@ public class ProductService implements CrudService<Product, Long> {
     }
 
 
+    @Autowired
+    private UserRepository userRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
 
@@ -70,10 +75,11 @@ public class ProductService implements CrudService<Product, Long> {
     }
 
     public Product createProduct(ProductDTO newProductDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
-        logger.info("Inside createProduct method");
+        logger.info("------------------in Service-------------------");
         logger.info("Creating product with name: {}", newProductDto.getName());
     
         // Verificar si ya existe un producto con el mismo nombre
+        logger.info("------------------Comprobar si asocia el producto-------------------");
         productRepository.findByName(newProductDto.getName()).ifPresent(product -> {
             logger.error("Product with name '{}' already exists", newProductDto.getName());
             throw new RuntimeException("There is already a product with the same name");
@@ -83,8 +89,9 @@ public class ProductService implements CrudService<Product, Long> {
     
         // Crear el nuevo producto, asignando un valor temporal para multimedia
         Product product = new Product(newProductDto.getName(), newProductDto.getQuantity(), newProductDto.getPrice(), newProductDto.getCost(), newProductDto.getDescription());
-    Entrepreneurship entrepreneurship = entrepreneurshipRepository.findById(newProductDto.getIdEntrepreneurship())
-    .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + newProductDto.getIdEntrepreneurship()));
+        
+        Entrepreneurship entrepreneurship = entrepreneurshipRepository.findByUserEntity_Id(newProductDto.getIdUser_Entity())
+        .orElseThrow(() -> new RuntimeException("enterepreneurship not found with ID: " + newProductDto.getIdUser_Entity()));
         // Establecer un valor temporal para multimedia antes de guardar
         product.setMultimedia("temporary");
         product.setEntrepreneurship(entrepreneurship);
@@ -118,7 +125,9 @@ public class ProductService implements CrudService<Product, Long> {
         product.setCost(editedProductDto.getCost());
         product.setDescription(editedProductDto.getDescription());
         product.setMultimedia("p-" + id.toString());
-
+        Entrepreneurship entrepreneurship = entrepreneurshipRepository.findByUserEntity_Id(editedProductDto.getIdUser_Entity())
+            .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + editedProductDto.getIdUser_Entity()));
+        product.setEntrepreneurship(entrepreneurship);	
         Product updatedProduct = productRepository.save(product);
 
         // Upload product image to MinIO

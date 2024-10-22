@@ -4,13 +4,17 @@ package com.innovatech.inventory.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.Getter;
@@ -39,11 +43,17 @@ public class Entrepreneurship {
 
     String lastnames;
 
+    @JsonIgnore
    @OneToMany(mappedBy = "entrepreneurship", cascade = CascadeType.ALL)
     private List<Product> products = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "entrepreneurship", cascade = CascadeType.ALL)
     private List<ServiceS> services = new ArrayList<>();
+
+    @OneToOne(cascade = CascadeType.ALL) // Asegúrate de que esta relación tenga el cascade si es necesario
+    @JoinColumn(name = "user_entity_id", unique = true) // Asegúrate de que el nombre de la columna sea correcto
+    private UserEntity userEntity;
 
     public Entrepreneurship(String name, String logo, String description, String names, String lastnames) {
         this.name = name;

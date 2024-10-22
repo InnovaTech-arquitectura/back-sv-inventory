@@ -14,8 +14,10 @@ import org.springframework.stereotype.Service;
 import com.innovatech.inventory.dto.ServiceDTO;
 import com.innovatech.inventory.entity.Entrepreneurship;
 import com.innovatech.inventory.entity.ServiceS;  // Cambié ServiceS a Service
+import com.innovatech.inventory.entity.UserEntity;
 import com.innovatech.inventory.repository.ServiceRepository; // Cambié ServiceRepositoryy a ServiceRepository
 import com.innovatech.inventory.repository.EntrepreneurshipRepository; // Added import for EntrepreneurshipRepository
+import com.innovatech.inventory.repository.UserRepository;
 
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
@@ -39,6 +41,9 @@ public class ServiceService implements CrudService<ServiceS, Long> { // Cambié 
 
     @Autowired
     private EntrepreneurshipRepository entrepreneurshipRepository;
+
+    @Autowired
+    private UserRepository UserRepository;
 
     @Override
     public ServiceS findById(Long id) {
@@ -67,40 +72,47 @@ public class ServiceService implements CrudService<ServiceS, Long> { // Cambié 
     }
 
     public ServiceS createService(ServiceDTO newServiceDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException, ParseException {
-        logger.info("Inside createService method");
+        logger.info("------------------in Service-------------------");
         logger.info("Creating service with name: {}", newServiceDto.getName());
 
         // Verificar si ya existe un servicio con el mismo nombre
+        logger.info("------------------Comprobar si asocia el Servicio-------------------");
         serviceRepository.findByName(newServiceDto.getName()).ifPresent(service -> {
             logger.error("Service with name '{}' already exists", newServiceDto.getName());
             throw new RuntimeException("There is already a service with the same name");
         });
 
         // Crear el nuevo servicio sin el campo multimedia (se asigna después)
+        //logger.info("------------------Crea el objetooooo Servicio-------------------");
         ServiceS service = new ServiceS(newServiceDto.getName(), newServiceDto.getPrice(), 
                 new SimpleDateFormat("yyyy-MM-dd").parse(newServiceDto.getInitialDate()), 
                 new SimpleDateFormat("yyyy-MM-dd").parse(newServiceDto.getFinalDate()), 
                 newServiceDto.getDescription());
                // logger.info("All emprendimientos: {}", entrepreneurshipRepository.findAll());
-                Entrepreneurship entrepreneurship = entrepreneurshipRepository.findById(newServiceDto.getIdEntrepreneurship())
-    .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + newServiceDto.getIdEntrepreneurship()));
-                
+              // logger.info("------------------Mira si existe un emprendimiento con el id del usuario {}-------------------",newServiceDto.getIdUser_Entity());
+               //logger.info("-------------------Asi se ven todos los emprendimientos-------------------");
+               //logger.info("{}",UserRepository.findAll());
+               Entrepreneurship entrepreneurship = entrepreneurshipRepository.findByUserEntity_Id(newServiceDto.getIdUser_Entity())
+        .orElseThrow(() -> new RuntimeException("enterepreneurship not found with ID: " + newServiceDto.getIdUser_Entity()));
+        //logger.info("------------------Lo mete en servicio -------------------");
+        //logger.info("-----------------Como se ve el objeto de emprendimiento-----------------------------------");
+        //logger.info("{}",entrepreneurship);
             service.setEntrepreneurship(entrepreneurship);
             service.setMultimedia("temporary");
         
-        logger.info("Saving service with name: {}", service.getName());
-        logger.info("before All products {}", serviceRepository.findAll());
+        logger.info("Se crea el temporar");
+        //logger.info("before All products {}", serviceRepository.findAll());
 
         ServiceS createdService = serviceRepository.save(service);
-        logger.info("Service created successfully with ID: {}", createdService.getId());
+        //logger.info("Service created successfully with ID: {}", createdService.getId());
 
        createdService.setMultimedia("s-" + createdService.getId().toString());
         serviceRepository.save(createdService);
-        logger.info("Service updated with multimedia: {}", createdService.getMultimedia());
+       // logger.info("Service updated with multimedia: {}", createdService.getMultimedia());
 
         // Subir la imagen a MinIO
         uploadServiceImage(createdService.getId(), newServiceDto.getPicture());
-        logger.info("Image uploaded successfully for service with ID: {}", createdService.getId());
+        //logger.info("Image uploaded successfully for service with ID: {}", createdService.getId());
 
         return createdService;
     }
@@ -115,6 +127,10 @@ public class ServiceService implements CrudService<ServiceS, Long> { // Cambié 
         service.setFinalDate(new SimpleDateFormat("yyyy-MM-dd").parse(editedServiceDto.getFinalDate()));
         service.setDescription(editedServiceDto.getDescription());
         service.setMultimedia("s-" + id.toString());
+
+        Entrepreneurship entrepreneurship = entrepreneurshipRepository.findByUserEntity_Id(editedServiceDto.getIdUser_Entity())
+            .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + editedServiceDto.getIdUser_Entity()));
+            service.setEntrepreneurship(entrepreneurship);	
 
         ServiceS updatedService = serviceRepository.save(service);
 
