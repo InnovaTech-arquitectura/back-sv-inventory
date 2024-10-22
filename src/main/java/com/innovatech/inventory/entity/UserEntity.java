@@ -45,6 +45,6 @@ public class UserEntity {
     private String password;
 
 
-    @OneToOne
-    private Entrepreneurship entrepreneurship;
+    //@OneToOne
+    //private Entrepreneurship entrepreneurship;
 }

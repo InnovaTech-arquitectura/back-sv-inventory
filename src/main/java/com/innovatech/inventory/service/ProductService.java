@@ -60,10 +60,11 @@ public class ProductService {
     }
 
     public Product createProduct(ProductDTO newProductDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
-        logger.info("Inside createProduct method");
+        logger.info("------------------in Service-------------------");
         logger.info("Creating product with name: {}", newProductDto.getName());
     
         // Verificar si ya existe un producto con el mismo nombre
+        logger.info("------------------Comprobar si asocia el producto-------------------");
         productRepository.findByName(newProductDto.getName()).ifPresent(product -> {
             logger.error("Product with name '{}' already exists", newProductDto.getName());
             throw new RuntimeException("There is already a product with the same name");
@@ -74,12 +75,11 @@ public class ProductService {
         // Crear el nuevo producto, asignando un valor temporal para multimedia
         Product product = new Product(newProductDto.getName(), newProductDto.getQuantity(), newProductDto.getPrice(), newProductDto.getCost(), newProductDto.getDescription());
         
-        UserEntity user = userRepository.findById(newProductDto.getIdUser_Entity())
-        .orElseThrow(() -> new RuntimeException("User not found with ID: " + newProductDto.getIdUser_Entity()));
-    
+        Entrepreneurship entrepreneurship = entrepreneurshipRepository.findByUserEntity_Id(newProductDto.getIdUser_Entity())
+        .orElseThrow(() -> new RuntimeException("enterepreneurship not found with ID: " + newProductDto.getIdUser_Entity()));
         // Establecer un valor temporal para multimedia antes de guardar
         product.setMultimedia("temporary");
-        product.setEntrepreneurship(user.getEntrepreneurship());
+        product.setEntrepreneurship(entrepreneurship);
     
         logger.info("Saving product with name: {}", product.getName());
         logger.info("before All products {}", productRepository.findAll());
@@ -110,7 +110,9 @@ public class ProductService {
         product.setCost(editedProductDto.getCost());
         product.setDescription(editedProductDto.getDescription());
         product.setMultimedia("p-" + id.toString());
-
+        Entrepreneurship entrepreneurship = entrepreneurshipRepository.findByUserEntity_Id(editedProductDto.getIdUser_Entity())
+            .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + editedProductDto.getIdUser_Entity()));
+        product.setEntrepreneurship(entrepreneurship);	
         Product updatedProduct = productRepository.save(product);
 
         // Upload product image to MinIO

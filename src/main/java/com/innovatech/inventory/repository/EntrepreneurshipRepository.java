@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 import com.innovatech.inventory.entity.Entrepreneurship;
 @Repository
 public interface EntrepreneurshipRepository extends JpaRepository<Entrepreneurship, Long> {
-	
+    Optional<Entrepreneurship> findByUserEntity_Id(Long userId);
 }
