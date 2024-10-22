@@ -1,13 +1,13 @@
 package com.innovatech.inventory.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
-@Table(name = "Product")
 @Data
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product {
@@ -34,12 +34,30 @@ public class Product {
     @Column(nullable = false)
     private String multimedia;
 
-    public Product(String name, Integer quantity, Double price, Double cost, String description, String multimedia) {
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "id_entrepreneurship", nullable = false)
+    private Entrepreneurship entrepreneurship;
+
+    // Constructor adicional que acepta todos los parámetros
+    public Product(String name, Integer quantity, Double price, Double cost, String description, String multimedia, Entrepreneurship entrepreneurship) {
         this.name = name;
         this.quantity = quantity;
         this.price = price;
         this.cost = cost;
         this.description = description;
         this.multimedia = multimedia;
+        this.entrepreneurship = entrepreneurship;
     }
+
+    public Product(String name, Integer quantity, Double price, Double cost, String description) {
+        this.name = name;
+        this.quantity = quantity;
+        this.price = price;
+        this.cost = cost;
+        this.description = description;
+    }
+
+    @OneToMany(mappedBy = "product")
+    private List<OrderProduct> orderProducts;
 }

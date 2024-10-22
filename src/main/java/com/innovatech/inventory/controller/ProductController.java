@@ -27,6 +27,8 @@ import com.innovatech.inventory.dto.ProductInfoDTO;
 import com.innovatech.inventory.entity.Product;
 import com.innovatech.inventory.service.MinioService;
 import com.innovatech.inventory.service.ProductService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
@@ -44,6 +46,8 @@ public class ProductController{
 
     @Autowired
     private MinioService minioService;
+
+    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
     @GetMapping("/all")
     public ResponseEntity<?> listProducts(@RequestParam(defaultValue = "1") Integer page,
@@ -92,21 +96,29 @@ public class ProductController{
 
     @PostMapping("/new")
     public ResponseEntity<?> createProduct(@ModelAttribute ProductDTO newProductDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
+        logger.info("Received request to create a new product with name: {}", newProductDto.getName());
+        
         try {
             Product newProduct = productService.createProduct(newProductDto);
+            logger.info("Product created successfully with ID: {}", newProduct.getId());
 
+            // Subir imagen del producto
             try {
                 minioService.uploadFile("p-" + newProduct.getId().toString(), newProductDto.getPicture());
+                logger.info("Image uploaded successfully for product with ID: {}", newProduct.getId());
             } catch (IOException e) {
+                logger.error("Error uploading image for product with ID: {}", newProduct.getId(), e);
                 productService.deleteProduct(newProduct.getId());
                 throw new RuntimeException(e);
             } catch (Exception e) {
-                productService.deleteProduct(newProduct.getId());
+                logger.error("Error during file upload for product with ID: {}", newProduct.getId(), e);
+                productService.deleteProduct(newProduct.getId()); 
                 return ResponseEntity.badRequest().body("Error uploading photo");
             }
 
             return ResponseEntity.ok(newProduct);
         } catch (DataIntegrityViolationException e) {
+            logger.error("Product with name '{}' already exists", newProductDto.getName());
             return ResponseEntity.status(HttpStatus.CONFLICT).body("There is already a product with the same name");
         }
     }

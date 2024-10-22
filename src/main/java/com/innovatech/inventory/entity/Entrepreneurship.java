@@ -1,11 +1,16 @@
 package com.innovatech.inventory.entity;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.Getter;
@@ -13,7 +18,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "Entrepreneurship")
 @Data
 @Getter
 @Setter
@@ -35,7 +39,11 @@ public class Entrepreneurship {
 
     String lastnames;
 
-   
+   @OneToMany(mappedBy = "entrepreneurship", cascade = CascadeType.ALL)
+    private List<Product> products = new ArrayList<>();
+
+    @OneToMany(mappedBy = "entrepreneurship", cascade = CascadeType.ALL)
+    private List<ServiceS> services = new ArrayList<>();
 
     public Entrepreneurship(String name, String logo, String description, String names, String lastnames) {
         this.name = name;
