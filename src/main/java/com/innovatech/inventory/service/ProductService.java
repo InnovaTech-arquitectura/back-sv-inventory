@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 import com.innovatech.inventory.dto.ProductDTO;
 import com.innovatech.inventory.entity.Entrepreneurship;
 import com.innovatech.inventory.entity.Product;
+import com.innovatech.inventory.entity.UserEntity;
 import com.innovatech.inventory.repository.EntrepreneurshipRepository;
 import com.innovatech.inventory.repository.ProductRepository;
+import com.innovatech.inventory.repository.UserRepository;
 
 import io.minio.errors.ErrorResponseException; 
 import io.minio.errors.InsufficientDataException; 
@@ -42,6 +44,9 @@ public class ProductService {
     @Autowired
     private EntrepreneurshipRepository entrepreneurshipRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
 
@@ -68,11 +73,13 @@ public class ProductService {
     
         // Crear el nuevo producto, asignando un valor temporal para multimedia
         Product product = new Product(newProductDto.getName(), newProductDto.getQuantity(), newProductDto.getPrice(), newProductDto.getCost(), newProductDto.getDescription());
-    Entrepreneurship entrepreneurship = entrepreneurshipRepository.findById(newProductDto.getIdEntrepreneurship())
-    .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + newProductDto.getIdEntrepreneurship()));
+        
+        UserEntity user = userRepository.findById(newProductDto.getIdUser_Entity())
+        .orElseThrow(() -> new RuntimeException("User not found with ID: " + newProductDto.getIdUser_Entity()));
+    
         // Establecer un valor temporal para multimedia antes de guardar
         product.setMultimedia("temporary");
-        product.setEntrepreneurship(entrepreneurship);
+        product.setEntrepreneurship(user.getEntrepreneurship());
     
         logger.info("Saving product with name: {}", product.getName());
         logger.info("before All products {}", productRepository.findAll());
