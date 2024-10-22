@@ -8,7 +8,7 @@ CREATE TABLE innovatech.role (
                                  name VARCHAR
 );
 
-CREATE TABLE innovatech.user (
+CREATE TABLE innovatech.user_entity (
                                  id SERIAL PRIMARY KEY,
                                  id_card INTEGER UNIQUE,
                                  name VARCHAR,

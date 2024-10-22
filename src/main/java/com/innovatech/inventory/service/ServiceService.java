@@ -15,8 +15,10 @@ import com.innovatech.inventory.dto.ServiceDTO;
 import com.innovatech.inventory.entity.Entrepreneurship;
 import com.innovatech.inventory.entity.Product;
 import com.innovatech.inventory.entity.ServiceS;  // Cambié ServiceS a Service
+import com.innovatech.inventory.entity.UserEntity;
 import com.innovatech.inventory.repository.ServiceRepository; // Cambié ServiceRepositoryy a ServiceRepository
 import com.innovatech.inventory.repository.EntrepreneurshipRepository; // Added import for EntrepreneurshipRepository
+import com.innovatech.inventory.repository.UserRepository;
 
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
@@ -40,6 +42,9 @@ public class ServiceService {
 
     @Autowired
     private EntrepreneurshipRepository entrepreneurshipRepository;
+
+    @Autowired
+    private UserRepository UserRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceService.class);
 
@@ -68,10 +73,9 @@ public class ServiceService {
                 new SimpleDateFormat("yyyy-MM-dd").parse(newServiceDto.getFinalDate()), 
                 newServiceDto.getDescription());
                // logger.info("All emprendimientos: {}", entrepreneurshipRepository.findAll());
-                Entrepreneurship entrepreneurship = entrepreneurshipRepository.findById(newServiceDto.getIdEntrepreneurship())
-    .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + newServiceDto.getIdEntrepreneurship()));
-                
-            service.setEntrepreneurship(entrepreneurship);
+               UserEntity user = UserRepository.findById(newServiceDto.getIdUser_Entity())
+        .orElseThrow(() -> new RuntimeException("User not found with ID: " + newServiceDto.getIdUser_Entity()));
+            service.setEntrepreneurship(user.getEntrepreneurship());
             service.setMultimedia("temporary");
         
         logger.info("Saving service with name: {}", service.getName());
