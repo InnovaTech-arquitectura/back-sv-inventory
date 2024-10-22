@@ -34,7 +34,7 @@ public class Product {
     @Column(nullable = false)
     private String multimedia;
 
-   // @JsonIgnore
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_entrepreneurship", nullable = false)
     private Entrepreneurship entrepreneurship;
