@@ -21,7 +21,5 @@ public class ServiceDTO {
 
     // Para la imagen del servicio (subida desde el cliente)
     private MultipartFile picture;
-
-     
-    private Long idEntrepreneurship;
+    private Long IdUser_Entity;
 }
