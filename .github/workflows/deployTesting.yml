@@ -1,0 +1,30 @@
+name: Deploy Spring Boot App to Testing
+
+on:
+  workflow_run:
+    workflows: ["BUILD CI"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, test-inventory]  # Cambiado a 'test-inventory' 
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
+
+    steps:
+    - name: Comprobando el repositorio
+      uses: actions/checkout@v4
+
+    - name: Configurar el agente SSH
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY_TESTING }}
+
+    - name: Ejecutar el script de despliegue
+      run: |
+        ssh -o StrictHostKeyChecking=no estudiante@10.43.100.194 'bash -s' < ./deploy.sh testing 
+      working-directory: ./  # Establece el directorio de trabajo a la raíz del repositorio
+
+    - name: Comprobar estado de despliegue
+      run: |
+        ssh -o StrictHostKeyChecking=no estudiante@10.43.100.194 'docker ps'

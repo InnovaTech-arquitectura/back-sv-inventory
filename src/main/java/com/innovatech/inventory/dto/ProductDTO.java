@@ -18,5 +18,5 @@ public class ProductDTO {
     
     // Para la imagen del producto (subida desde el cliente)
     private MultipartFile picture;  
-    private Long idEntrepreneurship;
+    private Long IdUser_Entity;
 }

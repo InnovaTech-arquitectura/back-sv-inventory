@@ -97,6 +97,7 @@ public class ProductController{
     @PostMapping("/new")
     public ResponseEntity<?> createProduct(@ModelAttribute ProductDTO newProductDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
         logger.info("Received request to create a new product with name: {}", newProductDto.getName());
+        logger.info("------------------in controller-------------------");
         
         try {
             Product newProduct = productService.createProduct(newProductDto);

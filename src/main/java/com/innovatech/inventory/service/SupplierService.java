@@ -55,4 +55,8 @@ public class SupplierService {
     public List<Supplier> getSuppliersByProductId(Long productId) {
         return supplierRepository.findByProductsId(productId);
     }
+
+    public void deleteSupplier(Long id) {
+        supplierRepository.deleteById(id);
+    }
 }
