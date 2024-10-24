@@ -78,7 +78,10 @@ public class SalesController {
         } catch (Exception e) {
             // Manejar cualquier otra excepción y retornar 400 Bad Request
             return new ResponseEntity<>("Unable to add Sale", HttpStatus.BAD_REQUEST);
+
         }
     }
     
 }
+
+
