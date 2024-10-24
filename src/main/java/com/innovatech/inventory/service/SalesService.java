@@ -26,10 +26,23 @@ public class SalesService implements CrudService<Sales, Long>{
         return salesRepository.findById(id).orElse(null);
     }
 
-    public List<Sales> listSales() {
-        return salesRepository.findAll(); // Devuelve todas las ventas
-    }
+    public Page<Sales> findAll(Pageable pageable) {
+        // Obtén todas las ventas paginadas
+        Page<Sales> salesPage = salesRepository.findAll(pageable);
     
+        // Itera sobre cada venta para actualizar el stock
+        for (Sales sale : salesPage.getContent()) {
+            Product product = sale.getProduct();
+            if (product != null) {
+                // Resta la cantidad vendida al stock del producto
+                product.setQuantity(product.getQuantity() - sale.getQuantitySold());
+                productRepository.save(product); // Guarda el producto actualizado
+            }
+        }
+    
+        return salesPage; 
+    }
+       
     @Override
     public void deleteById(Long id) {
         // Your implementation here
@@ -46,7 +59,4 @@ public class SalesService implements CrudService<Sales, Long>{
         return salesRepository.save(sale); // Guardar la venta
     }
 
-    public Page<Sales> findAll(Pageable pageable) {
-        return salesRepository.findAll(pageable);
-    }
 }               

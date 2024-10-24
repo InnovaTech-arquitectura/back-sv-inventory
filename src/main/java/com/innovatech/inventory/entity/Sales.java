@@ -27,11 +27,15 @@ public class Sales {
     @Column
     private int Quantity_sold;
 
+    @Column
+    private String sale_number;
+
 
     // Constructor
-    public Sales(Product product, int Quantity_sold) {
+    public Sales(Product product, int Quantity_sold, String sale_number) {
         this.product = product;
         this.Quantity_sold = Quantity_sold;
+        this.sale_number = sale_number;
     }
 
     // Getters y Setters
@@ -53,6 +57,14 @@ public class Sales {
 
     public void setQuantitySold(int Quantity_sold) {
         this.Quantity_sold = Quantity_sold;
+    }
+
+    public String getSaleNumber() {
+        return sale_number;
+    }    
+
+    public void setSaleNumber(String sale_number) {
+        this.sale_number = sale_number;
     }
     
 }
