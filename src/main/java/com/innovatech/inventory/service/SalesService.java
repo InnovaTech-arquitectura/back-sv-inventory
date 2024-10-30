@@ -51,12 +51,25 @@ public class SalesService implements CrudService<Sales, Long>{
 
     @Override
     public Sales save(Sales sale) {
-        // Lógica adicional si es necesario (por ejemplo, actualizar el stock)
-        Product product = sale.getProduct();
-        product.setQuantity(product.getQuantity() - sale.getQuantitySold());
-        productRepository.save(product); // Actualizar el stock del producto
+        // Verificar que el producto no sea nulo
+        if (sale.getProduct() == null || sale.getProduct().getId() == null) {
+            throw new IllegalArgumentException("Product must not be null and must have a valid ID");
+        }
 
-        return salesRepository.save(sale); // Guardar la venta
+        // Buscar el producto por ID para asegurarte de que existe en la base de datos
+        Product product = productRepository.findById(sale.getProduct().getId())
+            .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + sale.getProduct().getId()));
+
+        // Verificar que la cantidad vendida no exceda el stock
+        if (product.getQuantity() == null || sale.getQuantitySold() > product.getQuantity()) {
+            throw new IllegalArgumentException("Insufficient stock for product: " + product.getId());
+        }
+
+        // Actualizar el stock del producto
+        product.setQuantity(product.getQuantity() - sale.getQuantitySold());
+        productRepository.save(product); // Guarda el producto actualizado
+
+        return salesRepository.save(sale); // Guarda la venta
     }
 
 }               

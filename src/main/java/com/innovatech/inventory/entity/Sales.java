@@ -24,18 +24,18 @@ public class Sales {
     @JoinColumn(name = "id_product", referencedColumnName = "id")
     private Product product;
 
-    @Column
-    private int Quantity_sold;
+    @Column(name = "quantity_sold") 
+    private int quantitySold;
 
-    @Column
-    private String sale_number;
+    @Column(name = "sale_number") 
+    private String saleNumber;
 
 
     // Constructor
-    public Sales(Product product, int Quantity_sold, String sale_number) {
+    public Sales(Product product, int quantitySold, String saleNumber) {
         this.product = product;
-        this.Quantity_sold = Quantity_sold;
-        this.sale_number = sale_number;
+        this.quantitySold = quantitySold;
+        this.saleNumber = saleNumber;
     }
 
     // Getters y Setters
@@ -52,19 +52,19 @@ public class Sales {
     }
 
     public int getQuantitySold() {
-        return Quantity_sold;
+        return quantitySold;
     }
 
-    public void setQuantitySold(int Quantity_sold) {
-        this.Quantity_sold = Quantity_sold;
+    public void setQuantitySold(int quantitySold) {
+        this.quantitySold = quantitySold;
     }
 
     public String getSaleNumber() {
-        return sale_number;
+        return saleNumber;
     }    
 
-    public void setSaleNumber(String sale_number) {
-        this.sale_number = sale_number;
+    public void setSaleNumber(String saleNumber) {
+        this.saleNumber = saleNumber;
     }
     
 }
