@@ -21,7 +21,7 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 @ActiveProfiles("dev")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class SupplierTest {
-    private final String BASE_URL = "";
+    private final String BASE_URL = "http://10.43.101.180/";
 
     private WebDriver driver;
     private WebDriverWait wait;
@@ -39,7 +39,7 @@ public class SupplierTest {
     }
 
     @Test
-    public void SystemTest_Plan_Complete() {
+    public void SystemTest_Supplier_Complete() {
         //Busca pagina y la maximiza
         driver.get(BASE_URL + "login");
         driver.manage().window().maximize();
