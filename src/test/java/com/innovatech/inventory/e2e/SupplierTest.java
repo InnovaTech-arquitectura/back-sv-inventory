@@ -10,6 +10,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -43,6 +44,19 @@ public class SupplierTest {
         //Busca pagina y la maximiza
         driver.get(BASE_URL + "login");
         driver.manage().window().maximize();
+
+        //Ingresa los datos e inicia sessión
+        WebElement inputMail = driver.findElement(By.id("email"));
+        WebElement inputPassword = driver.findElement(By.id("password"));
+        WebElement inputUser = driver.findElement(By.id("tipoUser"));
+
+        inputMail.sendKeys("sanyaba03@hotmail.com");
+        inputPassword.sendKeys("123");
+        Select selectUser = new Select(inputUser);
+        selectUser.selectByIndex(1);
+
+        WebElement loginButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("/html/body/app-root/app-inicio-sesion/div/div[2]/form/button")));
+        loginButton.click();
     }
 
     @AfterEach
