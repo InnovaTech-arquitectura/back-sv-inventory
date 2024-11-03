@@ -1,4 +1,4 @@
-package com.innovatech.inventory;
+package com.innovatech.inventory.Testing;
 
 import com.innovatech.inventory.controller.SupplierController;
 import com.innovatech.inventory.dto.NewSupplierDTO;

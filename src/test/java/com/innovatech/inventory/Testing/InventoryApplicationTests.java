@@ -1,4 +1,4 @@
-package com.innovatech.inventory;
+package com.innovatech.inventory.Testing;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
