@@ -103,6 +103,6 @@ public class SupplierTest {
 
     @AfterEach
     void tearDown() {
-        //driver.quit();
+        driver.quit();
     }
 }
