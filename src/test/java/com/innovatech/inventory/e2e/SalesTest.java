@@ -51,7 +51,7 @@ public class SalesTest {
         WebElement inputPassword = driver.findElement(By.id("password"));
         WebElement inputUser = driver.findElement(By.id("tipoUser"));
 
-        inputMail.sendKeys("prueba@mail.com");
+        inputMail.sendKeys("prueba1@mail.com");
         inputPassword.sendKeys("1234");
         Select selectUser = new Select(inputUser);
         selectUser.selectByIndex(1);
@@ -68,11 +68,24 @@ public class SalesTest {
         WebElement addSaleButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("/html/body/app-root/app-list-sales/body/section/div[3]/a")));
         addSaleButton.click();
 
-        
+        WebElement inputProduct = wait.until(ExpectedConditions.elementToBeClickable(By.id("IDproducto")));
+        WebElement inputCantidad = wait.until(ExpectedConditions.elementToBeClickable(By.id("cantidad")));
+        WebElement inputNumeroVenta = wait.until(ExpectedConditions.elementToBeClickable(By.id("numeroVenta")));
+
+        inputProduct.sendKeys("6");
+        inputCantidad.sendKeys("1");
+        inputNumeroVenta.sendKeys("Sale-113");
+
+        WebElement addSalesButton = wait.until(ExpectedConditions.elementToBeClickable(By.id("agregarVenta")));
+        addSalesButton.click();
+
+        WebElement confirmButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("/html/body/div/div/div[6]/button[1]")));
+        confirmButton.click();
+
     }
 
     @AfterEach
     void tearDown() {
-        // driver.quit();
+        driver.quit();
     }
 }
