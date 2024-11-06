@@ -4,13 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Data
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product {
@@ -19,7 +16,7 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false,unique = true)
+    @Column(nullable = false, unique = true)
     private String name;
 
     @Column(nullable = false)
@@ -37,10 +34,21 @@ public class Product {
     @Column(nullable = false)
     private String multimedia;
 
-   // @JsonIgnore
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_entrepreneurship", nullable = false)
     private Entrepreneurship entrepreneurship;
+
+    // Constructor adicional que acepta todos los parámetros
+    public Product(String name, Integer quantity, Double price, Double cost, String description, String multimedia, Entrepreneurship entrepreneurship) {
+        this.name = name;
+        this.quantity = quantity;
+        this.price = price;
+        this.cost = cost;
+        this.description = description;
+        this.multimedia = multimedia;
+        this.entrepreneurship = entrepreneurship;
+    }
 
     public Product(String name, Integer quantity, Double price, Double cost, String description) {
         this.name = name;
@@ -48,13 +56,8 @@ public class Product {
         this.price = price;
         this.cost = cost;
         this.description = description;
-       // this.multimedia = multimedia;
     }
 
-
-    // Relationship with table Order_Product
     @OneToMany(mappedBy = "product")
     private List<OrderProduct> orderProducts;
-
-
 }

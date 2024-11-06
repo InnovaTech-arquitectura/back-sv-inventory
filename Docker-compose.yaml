@@ -1,32 +1,13 @@
 services:
   app:
     build:
-      context: .
+      context: .  # El contexto es la raíz del proyecto
+      dockerfile: Dockerfile  # Nombre del Dockerfile que se encuentra en la raíz
     container_name: back-sv-inventory
     ports:
-      - "8090:8090"  # Puerto expuesto para la aplicación
+      - "8090:8090"  # Exponer el puerto 8090 de la aplicación
     environment:
-      SPRING_PROFILES_ACTIVE: prod  # Activar el perfil de producción (o test)
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/innovatech
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: 123456
-    depends_on:
-      - db
-    restart: always
-
-  db:
-    image: postgres:13
-    container_name: postgres_db
-    environment:
-      POSTGRES_DB: innovatech
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456
-    ports:
-      - "5432:5432"
-    volumes:
-      - db_data:/var/lib/postgresql/data
-    restart: always
-
-
-volumes:
-  db_data:
+      SPRING_PROFILES_ACTIVE: test  # Activar el perfil de producción (o test)
+    env_file:  # Cargar variables de entorno desde el archivo .env
+      - .env
+    restart: always  # Reiniciar siempre que sea necesario

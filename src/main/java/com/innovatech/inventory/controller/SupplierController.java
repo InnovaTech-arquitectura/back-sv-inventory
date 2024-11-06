@@ -60,4 +60,14 @@ public class SupplierController {
         }
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteSupplier(@PathVariable Long id) {
+        try {
+            supplierService.deleteSupplier(id);
+            return ResponseEntity.ok("Supplier deleted");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error deleting supplier");
+        }
+    }
+
 }
