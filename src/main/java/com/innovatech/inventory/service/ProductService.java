@@ -74,6 +74,13 @@ public class ProductService implements CrudService<Product, Long> {
         return productRepository.findAll(pageable).getContent();
     }
 
+    public List<Product> getProductsByEntrepreneurshipId(Long entrepreneurshipId) {
+        Entrepreneurship entrepreneurship = entrepreneurshipRepository.findById(entrepreneurshipId)
+            .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + entrepreneurshipId));
+        
+        return productRepository.findByEntrepreneurship_Id(entrepreneurshipId);
+    }
+
     public Product createProduct(ProductDTO newProductDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
         logger.info("------------------in Service-------------------");
         logger.info("Creating product with name: {}", newProductDto.getName());

@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.innovatech.inventory.dto.ProductDTO;
 import com.innovatech.inventory.dto.ProductInfoDTO;
 import com.innovatech.inventory.entity.Product;
+import com.innovatech.inventory.entity.UserEntity;
 import com.innovatech.inventory.service.MinioService;
 import com.innovatech.inventory.service.ProductService;
 import org.slf4j.Logger;
@@ -73,6 +74,33 @@ public class ProductController{
         }
     }
 
+    @GetMapping("/entrepreneurship/{entrepreneurshipId}")
+    public ResponseEntity<?> getProductsByEntrepreneurship(@PathVariable Long entrepreneurshipId) {
+        try {
+            List<Product> products = productService.getProductsByEntrepreneurshipId(entrepreneurshipId);
+            List<ProductInfoDTO> productsDTO = new ArrayList<>();
+
+            for (Product product : products) {
+                ProductInfoDTO productDTO = new ProductInfoDTO(
+                    product.getId(),
+                    product.getName(),
+                    product.getQuantity(),
+                    product.getPrice(),
+                    product.getCost(),
+                    product.getDescription(),
+                    IOUtils.toByteArray(minioService.getObject(product.getMultimedia()))
+                );
+                productsDTO.add(productDTO);
+            }
+
+            return ResponseEntity.ok(productsDTO);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Entrepreneurship not found");
+        } catch (Exception e) {
+            logger.error("Error fetching products for entrepreneurship ID: {}", entrepreneurshipId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching products");
+        }
+    }
     @PutMapping("/{id}")
     public ResponseEntity<?> editProduct(@PathVariable Long id, @ModelAttribute ProductDTO editedProductDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
         try {
