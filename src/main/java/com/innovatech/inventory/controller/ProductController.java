@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.io.IOUtils;
@@ -21,6 +23,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.innovatech.inventory.dto.ProductDTO;
 import com.innovatech.inventory.dto.ProductInfoDTO;
@@ -74,33 +81,8 @@ public class ProductController{
         }
     }
 
-    @GetMapping("/entrepreneurship/{entrepreneurshipId}")
-    public ResponseEntity<?> getProductsByEntrepreneurship(@PathVariable Long entrepreneurshipId) {
-        try {
-            List<Product> products = productService.getProductsByEntrepreneurshipId(entrepreneurshipId);
-            List<ProductInfoDTO> productsDTO = new ArrayList<>();
+ 
 
-            for (Product product : products) {
-                ProductInfoDTO productDTO = new ProductInfoDTO(
-                    product.getId(),
-                    product.getName(),
-                    product.getQuantity(),
-                    product.getPrice(),
-                    product.getCost(),
-                    product.getDescription(),
-                    IOUtils.toByteArray(minioService.getObject(product.getMultimedia()))
-                );
-                productsDTO.add(productDTO);
-            }
-
-            return ResponseEntity.ok(productsDTO);
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Entrepreneurship not found");
-        } catch (Exception e) {
-            logger.error("Error fetching products for entrepreneurship ID: {}", entrepreneurshipId, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching products");
-        }
-    }
     @PutMapping("/{id}")
     public ResponseEntity<?> editProduct(@PathVariable Long id, @ModelAttribute ProductDTO editedProductDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
         try {
@@ -170,4 +152,43 @@ public class ProductController{
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
         }
     }
+
+    @GetMapping("/entrepreneurship/{entrepreneurshipId}")
+    public ResponseEntity<?> getProductsByEntrepreneurship(@PathVariable Long entrepreneurshipId,
+                                                           @RequestParam(defaultValue = "1") Integer page,
+                                                           @RequestParam(defaultValue = "20") Integer limit) {
+        try {
+            Page<Product> productsPage = productService.getProductsByEntrepreneurshipId(entrepreneurshipId, page, limit);
+            List<ProductInfoDTO> productsDTO = new ArrayList<>();
+    
+            for (Product product : productsPage.getContent()) {
+                ProductInfoDTO productDTO = new ProductInfoDTO(
+                    product.getId(),
+                    product.getName(),
+                    product.getQuantity(),
+                    product.getPrice(),
+                    product.getCost(),
+                    product.getDescription(),
+                    IOUtils.toByteArray(minioService.getObject(product.getMultimedia()))
+                );
+                productsDTO.add(productDTO);
+            }
+    
+            // Construir respuesta con datos de paginación
+            Map<String, Object> response = new HashMap<>();
+            response.put("products", productsDTO);
+            response.put("currentPage", productsPage.getNumber() + 1);
+            response.put("totalItems", productsPage.getTotalElements());
+            response.put("totalPages", productsPage.getTotalPages());
+    
+            return ResponseEntity.ok(response);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Entrepreneurship not found");
+        } catch (Exception e) {
+            logger.error("Error fetching products for entrepreneurship ID: {}", entrepreneurshipId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching products");
+        }
+    }
+    
+
 }

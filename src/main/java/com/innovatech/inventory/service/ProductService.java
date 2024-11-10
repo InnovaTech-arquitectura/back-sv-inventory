@@ -18,6 +18,10 @@ import com.innovatech.inventory.repository.EntrepreneurshipRepository;
 import com.innovatech.inventory.repository.ProductRepository;
 import com.innovatech.inventory.repository.UserRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import io.minio.errors.ErrorResponseException; 
 import io.minio.errors.InsufficientDataException; 
 import io.minio.errors.InternalException; 
@@ -74,12 +78,7 @@ public class ProductService implements CrudService<Product, Long> {
         return productRepository.findAll(pageable).getContent();
     }
 
-    public List<Product> getProductsByEntrepreneurshipId(Long entrepreneurshipId) {
-        Entrepreneurship entrepreneurship = entrepreneurshipRepository.findById(entrepreneurshipId)
-            .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + entrepreneurshipId));
-        
-        return productRepository.findByEntrepreneurship_Id(entrepreneurshipId);
-    }
+
 
     public Product createProduct(ProductDTO newProductDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
         logger.info("------------------in Service-------------------");
@@ -161,6 +160,17 @@ public class ProductService implements CrudService<Product, Long> {
         String fileName = "p-" + productId;  // Use the product ID as part of the file name
         logger.info("Uploading image for product with ID: {}", productId);
         minioService.uploadFile(fileName, picture);
+    }
+
+    public Page<Product> getProductsByEntrepreneurshipId(Long entrepreneurshipId, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Product> products = productRepository.findByEntrepreneurship_Id(entrepreneurshipId, pageable);
+        
+        if (products.isEmpty()) {
+            throw new RuntimeException("No products found for Entrepreneurship ID: " + entrepreneurshipId);
+        }
+    
+        return products;
     }
 }
 

@@ -1,11 +1,11 @@
 package com.innovatech.inventory.repository;
 
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
 
 import com.innovatech.inventory.entity.Product;
 
@@ -13,6 +13,7 @@ import com.innovatech.inventory.entity.Product;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     boolean existsByName(String name);
     Optional<Product> findByName(String name);
-    List<Product> findByEntrepreneurship_Id(Long entrepreneurshipId);
 
+    // Método modificado para soportar paginación
+    Page<Product> findByEntrepreneurship_Id(Long entrepreneurshipId, Pageable pageable);
 }
