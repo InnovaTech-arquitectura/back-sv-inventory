@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.innovatech.inventory.dto.ServiceDTO;
 import com.innovatech.inventory.entity.Entrepreneurship;
+import com.innovatech.inventory.entity.Product;
 import com.innovatech.inventory.entity.ServiceS;  // Cambié ServiceS a Service
 import com.innovatech.inventory.entity.UserEntity;
 import com.innovatech.inventory.repository.ServiceRepository; // Cambié ServiceRepositoryy a ServiceRepository
@@ -25,6 +26,9 @@ import io.minio.errors.InternalException;
 import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import org.springframework.web.multipart.MultipartFile;
 import org.slf4j.Logger;
@@ -159,4 +163,16 @@ public class ServiceService implements CrudService<ServiceS, Long> { // Cambié 
         logger.info("Uploading image for service with ID: {}", serviceId);
         minioService.uploadFile(fileName, picture);
     }
+    
+    public Page<ServiceS> getServicesByEntrepreneurshipId(Long entrepreneurshipId, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<ServiceS> services = serviceRepository.findByEntrepreneurship_Id(entrepreneurshipId, pageable);
+        
+        if (services.isEmpty()) {
+            throw new RuntimeException("No services found for Entrepreneurship ID: " + entrepreneurshipId);
+        }
+    
+        return services;
+    }
+
 }

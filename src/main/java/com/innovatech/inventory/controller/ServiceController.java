@@ -5,10 +5,13 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.data.domain.Page;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -147,4 +150,42 @@ public class ServiceController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Service not found");
         }
     }
+
+   @GetMapping("/entrepreneurship/{entrepreneurshipId}")
+public ResponseEntity<?> getServicesByEntrepreneurship(@PathVariable Long entrepreneurshipId,
+                                                       @RequestParam(defaultValue = "1") Integer page,
+                                                       @RequestParam(defaultValue = "20") Integer limit) {
+    try {
+        Page<ServiceS> servicesPage = serviceService.getServicesByEntrepreneurshipId(entrepreneurshipId, page, limit);
+        List<ServiceInfoDTO> servicesDTO = new ArrayList<>();
+
+        for (ServiceS service : servicesPage.getContent()) {
+            ServiceInfoDTO serviceDTO = new ServiceInfoDTO(
+                service.getId(),
+                service.getName(),
+                service.getPrice(),
+                service.getInitialDate(),
+                service.getFinalDate(),
+                service.getDescription(),
+                IOUtils.toByteArray(minioService.getObject(service.getMultimedia()))
+            );
+            servicesDTO.add(serviceDTO);
+        }
+
+        // Construir respuesta con datos de paginación
+        Map<String, Object> response = new HashMap<>();
+        response.put("services", servicesDTO);
+        response.put("currentPage", servicesPage.getNumber() + 1);
+        response.put("totalItems", servicesPage.getTotalElements());
+        response.put("totalPages", servicesPage.getTotalPages());
+
+        return ResponseEntity.ok(response);
+    } catch (NoSuchElementException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Entrepreneurship not found");
+    } catch (Exception e) {
+        logger.error("Error fetching services for entrepreneurship ID: {}", entrepreneurshipId, e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching services");
+    }
+}
+
 }
