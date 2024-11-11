@@ -164,7 +164,11 @@ public class ProductService implements CrudService<Product, Long> {
 
     public Page<Product> getProductsByEntrepreneurshipId(Long entrepreneurshipId, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<Product> products = productRepository.findByEntrepreneurship_Id(entrepreneurshipId, pageable);
+
+        Entrepreneurship entrepreneurship = entrepreneurshipRepository.findByUserEntity_Id(entrepreneurshipId)
+            .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + entrepreneurshipId));
+        
+        Page<Product> products = productRepository.findByEntrepreneurship_Id(entrepreneurship.getId(), pageable);
         
         if (products.isEmpty()) {
             throw new RuntimeException("No products found for Entrepreneurship ID: " + entrepreneurshipId);

@@ -85,6 +85,16 @@ public class ProductController{
 
     @PutMapping("/{id}")
     public ResponseEntity<?> editProduct(@PathVariable Long id, @ModelAttribute ProductDTO editedProductDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
+        if (editedProductDto.getQuantity() < 0) {
+            return ResponseEntity.badRequest().body("La cantidad no puede ser negativa");
+        }
+        if (editedProductDto.getCost() < 0) {
+            return ResponseEntity.badRequest().body("El precio del costo no puede ser negativo");
+        }
+        if (editedProductDto.getPrice() < 0) {
+            return ResponseEntity.badRequest().body("El precio no puede ser negativo");
+        }
+        
         try {
             Product editedProduct = productService.editProduct(id, editedProductDto);
 
@@ -105,34 +115,45 @@ public class ProductController{
     }
 
     @PostMapping("/new")
-    public ResponseEntity<?> createProduct(@ModelAttribute ProductDTO newProductDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
-        logger.info("Received request to create a new product with name: {}", newProductDto.getName());
-        logger.info("------------------in controller-------------------");
-        
-        try {
-            Product newProduct = productService.createProduct(newProductDto);
-            logger.info("Product created successfully with ID: {}", newProduct.getId());
-
-            // Subir imagen del producto
-            try {
-                minioService.uploadFile("p-" + newProduct.getId().toString(), newProductDto.getPicture());
-                logger.info("Image uploaded successfully for product with ID: {}", newProduct.getId());
-            } catch (IOException e) {
-                logger.error("Error uploading image for product with ID: {}", newProduct.getId(), e);
-                productService.deleteProduct(newProduct.getId());
-                throw new RuntimeException(e);
-            } catch (Exception e) {
-                logger.error("Error during file upload for product with ID: {}", newProduct.getId(), e);
-                productService.deleteProduct(newProduct.getId()); 
-                return ResponseEntity.badRequest().body("Error uploading photo");
-            }
-
-            return ResponseEntity.ok(newProduct);
-        } catch (DataIntegrityViolationException e) {
-            logger.error("Product with name '{}' already exists", newProductDto.getName());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("There is already a product with the same name");
-        }
+public ResponseEntity<?> createProduct(@ModelAttribute ProductDTO newProductDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
+    logger.info("Received request to create a new product with name: {}", newProductDto.getName());
+    logger.info("------------------in controller-------------------");
+    
+    // Validaciones para cantidad y precio
+    if (newProductDto.getQuantity() < 0) {
+        return ResponseEntity.badRequest().body("La cantidad no puede ser negativa");
     }
+    if (newProductDto.getCost() < 0) {
+        return ResponseEntity.badRequest().body("El precio del costo no puede ser negativo");
+    }
+    if (newProductDto.getPrice() < 0) {
+        return ResponseEntity.badRequest().body("El precio no puede ser negativo");
+    }
+
+    try {
+        Product newProduct = productService.createProduct(newProductDto);
+        logger.info("Product created successfully with ID: {}", newProduct.getId());
+
+        // Subir imagen del producto
+        try {
+            minioService.uploadFile("p-" + newProduct.getId().toString(), newProductDto.getPicture());
+            logger.info("Image uploaded successfully for product with ID: {}", newProduct.getId());
+        } catch (IOException e) {
+            logger.error("Error uploading image for product with ID: {}", newProduct.getId(), e);
+            productService.deleteProduct(newProduct.getId());
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            logger.error("Error during file upload for product with ID: {}", newProduct.getId(), e);
+            productService.deleteProduct(newProduct.getId()); 
+            return ResponseEntity.badRequest().body("Error uploading photo");
+        }
+
+        return ResponseEntity.ok(newProduct);
+    } catch (DataIntegrityViolationException e) {
+        logger.error("Product with name '{}' already exists", newProductDto.getName());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("There is already a product with the same name");
+    }
+}
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
@@ -153,12 +174,12 @@ public class ProductController{
         }
     }
 
-    @GetMapping("/entrepreneurship/{entrepreneurshipId}")
-    public ResponseEntity<?> getProductsByEntrepreneurship(@PathVariable Long entrepreneurshipId,
+    @GetMapping("/entrepreneurship/{id_user_entity}")
+    public ResponseEntity<?> getProductsByEntrepreneurship(@PathVariable("id_user_entity") Long userId,
                                                            @RequestParam(defaultValue = "1") Integer page,
                                                            @RequestParam(defaultValue = "20") Integer limit) {
         try {
-            Page<Product> productsPage = productService.getProductsByEntrepreneurshipId(entrepreneurshipId, page, limit);
+            Page<Product> productsPage = productService.getProductsByEntrepreneurshipId(userId, page, limit);
             List<ProductInfoDTO> productsDTO = new ArrayList<>();
     
             for (Product product : productsPage.getContent()) {
@@ -185,7 +206,7 @@ public class ProductController{
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Entrepreneurship not found");
         } catch (Exception e) {
-            logger.error("Error fetching products for entrepreneurship ID: {}", entrepreneurshipId, e);
+            logger.error("Error fetching products for userId ID: {}", userId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching products");
         }
     }

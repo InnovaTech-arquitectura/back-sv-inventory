@@ -151,12 +151,12 @@ public class ServiceController {
         }
     }
 
-   @GetMapping("/entrepreneurship/{entrepreneurshipId}")
-public ResponseEntity<?> getServicesByEntrepreneurship(@PathVariable Long entrepreneurshipId,
+   @GetMapping("/entrepreneurship/{id_user_entity}")
+public ResponseEntity<?> getServicesByEntrepreneurship(@PathVariable("id_user_entity") Long userId,
                                                        @RequestParam(defaultValue = "1") Integer page,
                                                        @RequestParam(defaultValue = "20") Integer limit) {
     try {
-        Page<ServiceS> servicesPage = serviceService.getServicesByEntrepreneurshipId(entrepreneurshipId, page, limit);
+        Page<ServiceS> servicesPage = serviceService.getServicesByEntrepreneurshipId(userId, page, limit);
         List<ServiceInfoDTO> servicesDTO = new ArrayList<>();
 
         for (ServiceS service : servicesPage.getContent()) {
@@ -183,7 +183,7 @@ public ResponseEntity<?> getServicesByEntrepreneurship(@PathVariable Long entrep
     } catch (NoSuchElementException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Entrepreneurship not found");
     } catch (Exception e) {
-        logger.error("Error fetching services for entrepreneurship ID: {}", entrepreneurshipId, e);
+        logger.error("Error fetching services for entrepreneurship ID: {}", userId, e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching services");
     }
 }
