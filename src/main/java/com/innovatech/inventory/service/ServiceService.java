@@ -70,9 +70,8 @@ public class ServiceService implements CrudService<ServiceS, Long> { // Cambié 
         return serviceRepository.findById(id).orElseThrow(() -> new RuntimeException("Service not found"));
     }
 
-    public List<ServiceS> listServices(Integer page, Integer limit) {
-        PageRequest pageable = PageRequest.of(page - 1, limit);
-        return serviceRepository.findAll(pageable).getContent();
+    public List<ServiceS> listServices() {
+        return serviceRepository.findAll();
     }
 
     public ServiceS createService(ServiceDTO newServiceDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException, ParseException {
@@ -172,12 +171,11 @@ public class ServiceService implements CrudService<ServiceS, Long> { // Cambié 
         minioService.uploadFile(fileName, picture);
     }
     
-    public Page<ServiceS> getServicesByEntrepreneurshipId(Long entrepreneurshipId, int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+    public List<ServiceS> getServicesByEntrepreneurshipId(Long entrepreneurshipId) {
 
         Entrepreneurship entrepreneurship = entrepreneurshipRepository.findByUserEntity_Id(entrepreneurshipId)
             .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + entrepreneurshipId));
-        Page<ServiceS> services = serviceRepository.findByEntrepreneurship_Id(entrepreneurship.getId(), pageable);
+        List<ServiceS> services = serviceRepository.findByEntrepreneurship_Id(entrepreneurship.getId());
         
         if (services.isEmpty()) {
             throw new RuntimeException("No services found for Entrepreneurship ID: " + entrepreneurshipId);
