@@ -73,9 +73,8 @@ public class ProductService implements CrudService<Product, Long> {
         return productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
     }
 
-    public List<Product> listProducts(Integer page, Integer limit) {
-        PageRequest pageable = PageRequest.of(page - 1, limit);
-        return productRepository.findAll(pageable).getContent();
+    public List<Product> listProducts() {
+        return productRepository.findAll();
     }
 
 
@@ -162,13 +161,11 @@ public class ProductService implements CrudService<Product, Long> {
         minioService.uploadFile(fileName, picture);
     }
 
-    public Page<Product> getProductsByEntrepreneurshipId(Long entrepreneurshipId, int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+    public List<Product> getProductsByEntrepreneurshipId(Long entrepreneurshipId) {
 
         Entrepreneurship entrepreneurship = entrepreneurshipRepository.findByUserEntity_Id(entrepreneurshipId)
             .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + entrepreneurshipId));
-        
-        Page<Product> products = productRepository.findByEntrepreneurship_Id(entrepreneurship.getId(), pageable);
+        List<Product> products = productRepository.findByEntrepreneurship_Id(entrepreneurship.getId());
         
         if (products.isEmpty()) {
             throw new RuntimeException("No products found for Entrepreneurship ID: " + entrepreneurshipId);

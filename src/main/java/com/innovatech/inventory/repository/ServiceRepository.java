@@ -1,5 +1,6 @@
 package com.innovatech.inventory.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -15,5 +16,5 @@ public interface ServiceRepository extends JpaRepository<ServiceS, Long> {
     Optional<ServiceS> findByName(String name);
 
     // Método modificado para soportar paginación
-    Page<ServiceS> findByEntrepreneurship_Id(Long entrepreneurshipId, Pageable pageable);
+    List<ServiceS> findByEntrepreneurship_Id(Long entrepreneurshipId);
 }

@@ -12,6 +12,8 @@ import java.util.NoSuchElementException;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,17 +58,23 @@ public class ServiceController {
  private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
     @GetMapping("/all")
-    public ResponseEntity<?> listServices(@RequestParam(defaultValue = "1") Integer page,
-                                          @RequestParam(defaultValue = "20") Integer limit) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
+    public Page<ServiceInfoDTO> listServices(Pageable pageable) 
+    throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException 
+    {
 
-        List<ServiceS> products = serviceService.listServices(page, limit);
+        List<ServiceS> products = serviceService.listServices();
+        
         List<ServiceInfoDTO> productsDTO = new ArrayList<>();
         for (ServiceS product : products) {
             ServiceInfoDTO productDTO = new ServiceInfoDTO(product.getId(), product.getName(), product.getPrice(), product.getInitialDate(), product.getFinalDate(), product.getDescription(), IOUtils.toByteArray(minioService.getObject(product.getMultimedia())));
             productsDTO.add(productDTO);
         }
 
-        return ResponseEntity.ok(productsDTO);
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), productsDTO.size());
+        List<ServiceInfoDTO> paginatedList = productsDTO.subList(start, end);
+
+        return new PageImpl<>(paginatedList, pageable, productsDTO.size());
     }
 
 
@@ -151,40 +159,40 @@ public class ServiceController {
         }
     }
 
-   @GetMapping("/entrepreneurship/{id_user_entity}")
-public ResponseEntity<?> getServicesByEntrepreneurship(@PathVariable("id_user_entity") Long userId,
-                                                       @RequestParam(defaultValue = "1") Integer page,
-                                                       @RequestParam(defaultValue = "20") Integer limit) {
-    try {
-        Page<ServiceS> servicesPage = serviceService.getServicesByEntrepreneurshipId(userId, page, limit);
-        List<ServiceInfoDTO> servicesDTO = new ArrayList<>();
-
-        for (ServiceS service : servicesPage.getContent()) {
-            ServiceInfoDTO serviceDTO = new ServiceInfoDTO(
-                service.getId(),
-                service.getName(),
-                service.getPrice(),
-                service.getInitialDate(),
-                service.getFinalDate(),
-                service.getDescription(),
-                IOUtils.toByteArray(minioService.getObject(service.getMultimedia()))
+    @GetMapping("/entrepreneurship/{id_user_entity}")
+    public Page<ServiceInfoDTO> getServicesByEntrepreneurship(Pageable pageable, @PathVariable("id_user_entity") Long userId) {
+        try {
+            List<ServiceS> servicesPage = serviceService.getServicesByEntrepreneurshipId(userId);
+            List<ServiceInfoDTO> servicesDTO = new ArrayList<>();
+            
+            for (ServiceS service : servicesPage) {
+                ServiceInfoDTO serviceDTO = new ServiceInfoDTO(
+                    service.getId(),
+                    service.getName(),
+                    service.getPrice(),
+                    service.getInitialDate(),
+                    service.getFinalDate(),
+                    service.getDescription(),
+                    IOUtils.toByteArray(minioService.getObject(service.getMultimedia()))
             );
             servicesDTO.add(serviceDTO);
         }
-
+        
         // Construir respuesta con datos de paginación
         Map<String, Object> response = new HashMap<>();
         response.put("services", servicesDTO);
-        response.put("currentPage", servicesPage.getNumber() + 1);
-        response.put("totalItems", servicesPage.getTotalElements());
-        response.put("totalPages", servicesPage.getTotalPages());
 
-        return ResponseEntity.ok(response);
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), servicesDTO.size());
+        List<ServiceInfoDTO> paginatedList = servicesDTO.subList(start, end);
+        
+        return new PageImpl<>(paginatedList, pageable, servicesDTO.size());
+
     } catch (NoSuchElementException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Entrepreneurship not found");
+        return (Page<ServiceInfoDTO>) ResponseEntity.status(HttpStatus.NOT_FOUND).body("Entrepreneurship not found");
     } catch (Exception e) {
         logger.error("Error fetching services for entrepreneurship ID: {}", userId, e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching services");
+        return (Page<ServiceInfoDTO>) ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching services");
     }
 }
 
