@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException; 
 import java.security.NoSuchAlgorithmException; 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired; 
@@ -11,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.innovatech.inventory.dto.ProductDTO;
+import com.innovatech.inventory.dto.ProductInfoDTO;
 import com.innovatech.inventory.entity.Entrepreneurship;
 import com.innovatech.inventory.entity.Product;
 import com.innovatech.inventory.entity.UserEntity;
@@ -31,7 +33,7 @@ import io.minio.errors.XmlParserException;
 
 import org.slf4j.Logger;
 
-
+import org.apache.commons.io.IOUtils;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -73,9 +75,24 @@ public class ProductService implements CrudService<Product, Long> {
         return productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
     }
 
-    public List<Product> listProducts() {
-        return productRepository.findAll();
-    }
+    public Page<ProductInfoDTO> listProducts(Pageable pageable) {
+    Page<Product> productPage = productRepository.findAll(pageable);
+    return productPage.map(product -> {
+        try {
+            return new ProductInfoDTO(
+                product.getId(),
+                product.getName(),
+                product.getQuantity(),
+                product.getPrice(),
+                product.getCost(),
+                product.getDescription(),
+                IOUtils.toByteArray(minioService.getObject(product.getMultimedia()))
+            );
+        } catch (IOException | InvalidKeyException | ServerException | InsufficientDataException | ErrorResponseException | NoSuchAlgorithmException | InvalidResponseException | XmlParserException | InternalException e) {
+            throw new RuntimeException("Error processing multimedia content", e);
+        }
+    });
+}
 
 
 
@@ -161,17 +178,29 @@ public class ProductService implements CrudService<Product, Long> {
         minioService.uploadFile(fileName, picture);
     }
 
-    public List<Product> getProductsByEntrepreneurshipId(Long entrepreneurshipId) {
-
-        Entrepreneurship entrepreneurship = entrepreneurshipRepository.findByUserEntity_Id(entrepreneurshipId)
-            .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + entrepreneurshipId));
-        List<Product> products = productRepository.findByEntrepreneurship_Id(entrepreneurship.getId());
-        
-        if (products.isEmpty()) {
-            throw new RuntimeException("No products found for Entrepreneurship ID: " + entrepreneurshipId);
-        }
+    public Page<ProductInfoDTO> getProductsByEntrepreneurshipId(Long userId, Pageable pageable) {
+        Entrepreneurship entrepreneurship = entrepreneurshipRepository.findByUserEntity_Id(userId)
+            .orElseThrow(() -> new NoSuchElementException("Entrepreneurship not found for user ID: " + userId));
     
-        return products;
+        Page<Product> productPage = productRepository.findByEntrepreneurship_Id(entrepreneurship.getId(), pageable);
+    
+        return productPage.map(product -> {
+            try {
+                return new ProductInfoDTO(
+                    product.getId(),
+                    product.getName(),
+                    product.getQuantity(),
+                    product.getPrice(),
+                    product.getCost(),
+                    product.getDescription(),
+                    IOUtils.toByteArray(minioService.getObject(product.getMultimedia()))
+                );
+            } catch (IOException | InvalidKeyException | ServerException | InsufficientDataException | ErrorResponseException | NoSuchAlgorithmException | InvalidResponseException | XmlParserException | InternalException e) {
+                throw new RuntimeException("Error processing multimedia content for product ID: " + product.getId(), e);
+            }
+        });
     }
+    
+
 }
 

@@ -16,5 +16,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByName(String name);
 
     // Método modificado para soportar paginación
-    List<Product> findByEntrepreneurship_Id(Long entrepreneurshipId);
+    Page<Product> findByEntrepreneurship_Id(Long entrepreneurshipId, Pageable pageable);
+
+
 }

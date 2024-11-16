@@ -46,6 +46,8 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 
+import org.springframework.http.MediaType;
+
 @RestController
 @RequestMapping("/product")
 public class ProductController{
@@ -60,24 +62,20 @@ public class ProductController{
 
     
     @GetMapping("/all")
-    public Page<ProductInfoDTO> listProducts(Pageable pageable)
-    throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException
-    {
-        
-        List<Product> products = productService.listProducts();
-
-        List<ProductInfoDTO> productsDTO = new ArrayList<>();
-        for (Product product : products) {
-            ProductInfoDTO productDTO = new ProductInfoDTO(product.getId(), product.getName(), product.getQuantity(), product.getPrice(), product.getCost(), product.getDescription(), IOUtils.toByteArray(minioService.getObject(product.getMultimedia())));
-            productsDTO.add(productDTO);
+    public ResponseEntity<?> listProducts(
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "0") int page) {
+        try {
+            Pageable pageable = PageRequest.of(page, limit);
+            Page<ProductInfoDTO> productsDTOPage = productService.listProducts(pageable);
+            return ResponseEntity.ok(productsDTOPage);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body("An unexpected error occurred: " + e.getMessage());
         }
-
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), productsDTO.size());
-        List<ProductInfoDTO> paginatedList = productsDTO.subList(start, end);
-
-        return new PageImpl<>(paginatedList, pageable, productsDTO.size());
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<?> findProduct(@PathVariable Long id) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
@@ -183,42 +181,24 @@ public ResponseEntity<?> createProduct(@ModelAttribute ProductDTO newProductDto)
     }
 
     @GetMapping("/entrepreneurship/{id_user_entity}")
-    public Page<ProductInfoDTO> getProductsByEntrepreneurship(Pageable pageable, @PathVariable("id_user_entity") Long userId) {
+    public ResponseEntity<?> getProductsByEntrepreneurship(
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "0") int page,
+            @PathVariable("id_user_entity") Long userId) {
         try {
-            List<Product> productsPage = productService.getProductsByEntrepreneurshipId(userId);
-            List<ProductInfoDTO> productsDTO = new ArrayList<>();
-    
-            for (Product product : productsPage) {
-                ProductInfoDTO productDTO = new ProductInfoDTO(
-                    product.getId(),
-                    product.getName(),
-                    product.getQuantity(),
-                    product.getPrice(),
-                    product.getCost(),
-                    product.getDescription(),
-                    IOUtils.toByteArray(minioService.getObject(product.getMultimedia()))
-                );
-                productsDTO.add(productDTO);
-            }
-    
-            // Construir respuesta con datos de paginación
-            Map<String, Object> response = new HashMap<>();
-            response.put("products", productsDTO);
-
-            int start = (int) pageable.getOffset();
-            int end = Math.min((start + pageable.getPageSize()), productsDTO.size());
-            List<ProductInfoDTO> paginatedList = productsDTO.subList(start, end);
-
-            return new PageImpl<>(paginatedList, pageable, productsDTO.size());
-            
+            Pageable pageable = PageRequest.of(page, limit);
+            Page<ProductInfoDTO> productsDTOPage = productService.getProductsByEntrepreneurshipId(userId, pageable);
+            return ResponseEntity.ok(productsDTOPage);
         } catch (NoSuchElementException e) {
-            return (Page<ProductInfoDTO>) ResponseEntity.status(HttpStatus.NOT_FOUND).body("Entrepreneurship not found");
-            //ResponseEntity.status(HttpStatus.NOT_FOUND).body("Entrepreneurship not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body("Entrepreneurship not found for user ID: " + userId);
         } catch (Exception e) {
-            logger.error("Error fetching products for userId ID: {}", userId, e);
-            return (Page<ProductInfoDTO>) ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching products");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body("Error fetching products for user ID: " + userId + ". Details: " + e.getMessage());
         }
     }
+
+
     
 
 }

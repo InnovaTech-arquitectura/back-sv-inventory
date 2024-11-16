@@ -16,5 +16,5 @@ public interface ServiceRepository extends JpaRepository<ServiceS, Long> {
     Optional<ServiceS> findByName(String name);
 
     // Método modificado para soportar paginación
-    List<ServiceS> findByEntrepreneurship_Id(Long entrepreneurshipId);
+    Page<ServiceS> findByEntrepreneurship_Id(Long entrepreneurshipId, Pageable pageable);
 }
