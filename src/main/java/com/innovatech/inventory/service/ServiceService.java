@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 
@@ -11,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import com.innovatech.inventory.dto.ProductInfoDTO;
 import com.innovatech.inventory.dto.ServiceDTO;
+import com.innovatech.inventory.dto.ServiceInfoDTO;
 import com.innovatech.inventory.entity.Entrepreneurship;
 import com.innovatech.inventory.entity.Product;
 import com.innovatech.inventory.entity.ServiceS;  // Cambié ServiceS a Service
@@ -29,6 +32,8 @@ import io.minio.errors.XmlParserException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+
+import org.apache.commons.io.IOUtils;
 
 import org.springframework.web.multipart.MultipartFile;
 import org.slf4j.Logger;
@@ -70,8 +75,25 @@ public class ServiceService implements CrudService<ServiceS, Long> { // Cambié 
         return serviceRepository.findById(id).orElseThrow(() -> new RuntimeException("Service not found"));
     }
 
-    public List<ServiceS> listServices() {
-        return serviceRepository.findAll();
+    public Page<ServiceInfoDTO> listServices(Pageable pageable) {
+
+        Page<ServiceS> servicePage = serviceRepository.findAll(pageable);
+        return servicePage.map(service -> {
+            try {
+                return new ServiceInfoDTO(
+                    service.getId(),
+                    service.getName(),
+                    service.getPrice(),
+                    service.getInitialDate(),
+                    service.getFinalDate(),
+                    service.getDescription(),
+                    IOUtils.toByteArray(minioService.getObject(service.getMultimedia()))
+                );
+            } catch (IOException | InvalidKeyException | ServerException | InsufficientDataException | ErrorResponseException | NoSuchAlgorithmException | InvalidResponseException | XmlParserException | InternalException e) {
+                throw new RuntimeException("Error processing multimedia content", e);
+            }
+        });
+
     }
 
     public ServiceS createService(ServiceDTO newServiceDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException, ParseException {
@@ -171,17 +193,27 @@ public class ServiceService implements CrudService<ServiceS, Long> { // Cambié 
         minioService.uploadFile(fileName, picture);
     }
     
-    public List<ServiceS> getServicesByEntrepreneurshipId(Long entrepreneurshipId) {
-
-        Entrepreneurship entrepreneurship = entrepreneurshipRepository.findByUserEntity_Id(entrepreneurshipId)
-            .orElseThrow(() -> new RuntimeException("Entrepreneurship not found with ID: " + entrepreneurshipId));
-        List<ServiceS> services = serviceRepository.findByEntrepreneurship_Id(entrepreneurship.getId());
+    public Page<ServiceInfoDTO> getServicesByEntrepreneurshipId(Long userId, Pageable pageable) {
+        Entrepreneurship entrepreneurship = entrepreneurshipRepository.findByUserEntity_Id(userId)
+            .orElseThrow(() -> new NoSuchElementException("Entrepreneurship not found for user ID: " + userId));
         
-        if (services.isEmpty()) {
-            throw new RuntimeException("No services found for Entrepreneurship ID: " + entrepreneurshipId);
-        }
-    
-        return services;
+        Page<ServiceS> servicePage = serviceRepository.findByEntrepreneurship_Id(entrepreneurship.getId(), pageable);
+        
+        return servicePage.map(service -> {
+            try {
+                return new ServiceInfoDTO(
+                        service.getId(),
+                        service.getName(),
+                        service.getPrice(),
+                        service.getInitialDate(),
+                        service.getFinalDate(),
+                        service.getDescription(),
+                        IOUtils.toByteArray(minioService.getObject(service.getMultimedia()))
+                );
+            } catch (IOException | InvalidKeyException | ServerException | InsufficientDataException | ErrorResponseException | NoSuchAlgorithmException | InvalidResponseException | XmlParserException | InternalException e) {
+                throw new RuntimeException("Error processing multimedia content", e);
+            }
+        });
     }
 
 }
