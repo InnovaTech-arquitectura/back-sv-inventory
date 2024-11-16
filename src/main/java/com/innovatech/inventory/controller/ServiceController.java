@@ -5,10 +5,16 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +46,8 @@ import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
 
+import org.springframework.http.MediaType;
+
 @RestController
 @RequestMapping("/service")
 public class ServiceController {
@@ -53,17 +61,18 @@ public class ServiceController {
  private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
     @GetMapping("/all")
-    public ResponseEntity<?> listServices(@RequestParam(defaultValue = "1") Integer page,
-                                          @RequestParam(defaultValue = "20") Integer limit) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
-
-        List<ServiceS> products = serviceService.listServices(page, limit);
-        List<ServiceInfoDTO> productsDTO = new ArrayList<>();
-        for (ServiceS product : products) {
-            ServiceInfoDTO productDTO = new ServiceInfoDTO(product.getId(), product.getName(), product.getPrice(), product.getInitialDate(), product.getFinalDate(), product.getDescription(), IOUtils.toByteArray(minioService.getObject(product.getMultimedia())));
-            productsDTO.add(productDTO);
+    public ResponseEntity<?> listServices(
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "0") int page) {
+        try {
+            Pageable pageable = PageRequest.of(page, limit);
+            Page<ServiceInfoDTO> servicesDTOPage = serviceService.listServices(pageable);
+            return ResponseEntity.ok(servicesDTOPage);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .body("An unexpected error occurred: " + e.getMessage());
         }
-
-        return ResponseEntity.ok(productsDTO);
     }
 
 
@@ -146,5 +155,24 @@ public class ServiceController {
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Service not found");
         }
+    }
+
+    @GetMapping("/entrepreneurship/{id_user_entity}")
+    public ResponseEntity<?> getServicesByEntrepreneurship(
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "0") int page,
+            @PathVariable("id_user_entity") Long userId) {
+        try {
+            Pageable pageable = PageRequest.of(page, limit);
+            Page<ServiceInfoDTO> servicesDTOPage = serviceService.getServicesByEntrepreneurshipId(userId, pageable);
+            return ResponseEntity.ok(servicesDTOPage);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Entrepreneurship not found for user ID: " + userId);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching services for user ID: " + userId + ". Details: " + e.getMessage());
+        }
+        
     }
 }

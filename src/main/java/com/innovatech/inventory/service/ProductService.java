@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException; 
 import java.security.NoSuchAlgorithmException; 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired; 
@@ -11,12 +12,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.innovatech.inventory.dto.ProductDTO;
+import com.innovatech.inventory.dto.ProductInfoDTO;
 import com.innovatech.inventory.entity.Entrepreneurship;
 import com.innovatech.inventory.entity.Product;
 import com.innovatech.inventory.entity.UserEntity;
 import com.innovatech.inventory.repository.EntrepreneurshipRepository;
 import com.innovatech.inventory.repository.ProductRepository;
 import com.innovatech.inventory.repository.UserRepository;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import io.minio.errors.ErrorResponseException; 
 import io.minio.errors.InsufficientDataException; 
@@ -27,7 +33,7 @@ import io.minio.errors.XmlParserException;
 
 import org.slf4j.Logger;
 
-
+import org.apache.commons.io.IOUtils;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -69,10 +75,26 @@ public class ProductService implements CrudService<Product, Long> {
         return productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
     }
 
-    public List<Product> listProducts(Integer page, Integer limit) {
-        PageRequest pageable = PageRequest.of(page - 1, limit);
-        return productRepository.findAll(pageable).getContent();
-    }
+    public Page<ProductInfoDTO> listProducts(Pageable pageable) {
+    Page<Product> productPage = productRepository.findAll(pageable);
+    return productPage.map(product -> {
+        try {
+            return new ProductInfoDTO(
+                product.getId(),
+                product.getName(),
+                product.getQuantity(),
+                product.getPrice(),
+                product.getCost(),
+                product.getDescription(),
+                IOUtils.toByteArray(minioService.getObject(product.getMultimedia()))
+            );
+        } catch (IOException | InvalidKeyException | ServerException | InsufficientDataException | ErrorResponseException | NoSuchAlgorithmException | InvalidResponseException | XmlParserException | InternalException e) {
+            throw new RuntimeException("Error processing multimedia content", e);
+        }
+    });
+}
+
+
 
     public Product createProduct(ProductDTO newProductDto) throws InvalidKeyException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidResponseException, XmlParserException, InternalException, IOException {
         logger.info("------------------in Service-------------------");
@@ -155,5 +177,30 @@ public class ProductService implements CrudService<Product, Long> {
         logger.info("Uploading image for product with ID: {}", productId);
         minioService.uploadFile(fileName, picture);
     }
+
+    public Page<ProductInfoDTO> getProductsByEntrepreneurshipId(Long userId, Pageable pageable) {
+        Entrepreneurship entrepreneurship = entrepreneurshipRepository.findByUserEntity_Id(userId)
+            .orElseThrow(() -> new NoSuchElementException("Entrepreneurship not found for user ID: " + userId));
+    
+        Page<Product> productPage = productRepository.findByEntrepreneurship_Id(entrepreneurship.getId(), pageable);
+    
+        return productPage.map(product -> {
+            try {
+                return new ProductInfoDTO(
+                    product.getId(),
+                    product.getName(),
+                    product.getQuantity(),
+                    product.getPrice(),
+                    product.getCost(),
+                    product.getDescription(),
+                    IOUtils.toByteArray(minioService.getObject(product.getMultimedia()))
+                );
+            } catch (IOException | InvalidKeyException | ServerException | InsufficientDataException | ErrorResponseException | NoSuchAlgorithmException | InvalidResponseException | XmlParserException | InternalException e) {
+                throw new RuntimeException("Error processing multimedia content for product ID: " + product.getId(), e);
+            }
+        });
+    }
+    
+
 }
 

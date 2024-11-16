@@ -51,15 +51,13 @@ public class SalesController {
     public ResponseEntity<?> addSale(@RequestBody Sales sales) {
         try {
             // Verificar si el producto existe
-            Product existingProduct = productRepository.findById(sales.getProduct().getId())
-                .orElse(null);
+            Product existingProduct = productRepository.findById(sales.getProduct().getId()).orElse(null);
 
             if (existingProduct == null) {
-                // Retornar 404 Not Found si el producto no existe
                 return new ResponseEntity<>("Conflict: Product not found", HttpStatus.NOT_FOUND);
             }
 
-            // Verificar que la cantidad vendida no exceda el stock
+            // Asegurarse de que la cantidad vendida no exceda el stock
             if (sales.getQuantitySold() > existingProduct.getQuantity()) {
                 return new ResponseEntity<>("Conflict: Insufficient stock", HttpStatus.CONFLICT);
             }
@@ -68,16 +66,18 @@ public class SalesController {
             Sales saleDB = salesService.save(sales);
 
             if (saleDB == null) {
-                // Si la venta no se pudo guardar, retornar 400 Bad Request
                 return new ResponseEntity<>("Unable to add Sale", HttpStatus.BAD_REQUEST);
             }
 
-            // Retornar 201 Created si la venta se guardó correctamente
             return new ResponseEntity<>(saleDB, HttpStatus.CREATED);
 
         } catch (Exception e) {
-            // Manejar cualquier otra excepción y retornar 400 Bad Request
             return new ResponseEntity<>("Unable to add Sale", HttpStatus.BAD_REQUEST);
-      }
+        }
+    }
+
+
+    
 }
-}
+
+
