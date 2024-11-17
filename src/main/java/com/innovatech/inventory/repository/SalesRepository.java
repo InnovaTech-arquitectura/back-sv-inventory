@@ -13,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface SalesRepository extends JpaRepository<Sales, Long> {
+    
     @Query("SELECT s FROM Sales s WHERE s.product.entrepreneurship.id = :entrepreneurshipId")
     Page<Sales> findByEntrepreneurshipId(@Param("entrepreneurshipId") Long entrepreneurshipId, Pageable pageable);
+
 }

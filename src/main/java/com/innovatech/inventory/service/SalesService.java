@@ -67,4 +67,8 @@ public class SalesService implements CrudService<Sales, Long>{
         return salesRepository.save(sale);
     }
 
+    public Page<Sales> findSalesByEntrepreneurshipId(Long entrepreneurshipId, Pageable pageable) {
+        return salesRepository.findByEntrepreneurshipId(entrepreneurshipId, pageable);
+    }
+
 }               
