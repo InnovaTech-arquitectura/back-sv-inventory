@@ -1,6 +1,8 @@
 package com.innovatech.inventory.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,6 +40,10 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "id_entrepreneurship", nullable = false)
     private Entrepreneurship entrepreneurship;
+
+    @OneToMany(mappedBy = "product")
+    @JsonManagedReference  // Maneja la serialización de la relación
+    private List<Sales> sales;
 
     // Constructor adicional que acepta todos los parámetros
     public Product(String name, Integer quantity, Double price, Double cost, String description, String multimedia, Entrepreneurship entrepreneurship) {
