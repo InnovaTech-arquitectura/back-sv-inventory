@@ -42,6 +42,11 @@ public class SalesService implements CrudService<Sales, Long>{
     
         return salesPage; 
     }
+
+    
+    public Page<Sales> findSalesByEntrepreneurshipId(Long entrepreneurshipId, Pageable pageable) {
+        return salesRepository.findByEntrepreneurshipId(entrepreneurshipId, pageable);
+    }
        
     @Override
     public void deleteById(Long id) {
