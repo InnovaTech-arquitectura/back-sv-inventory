@@ -14,11 +14,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import com.innovatech.inventory.repository.SalesRepository;
 
 
 @RestController
@@ -28,6 +31,9 @@ public class SalesController {
     
     @Autowired
     private SalesService salesService;
+
+    @Autowired
+    private SalesRepository SalesRepository;
 
     @Autowired
     private ProductRepository productRepository;
@@ -43,6 +49,28 @@ public class SalesController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                                  .body("An unexpected error occurred");
+        }
+    }
+
+    @GetMapping("/by-entrepreneurship/{entrepreneurshipId}")
+    public ResponseEntity<?> getSalesByEntrepreneurship(
+            @PathVariable Long entrepreneurshipId, // Variable de ruta
+            @RequestParam(defaultValue = "10") int limit, // Parámetro para el tamaño de la página
+            @RequestParam(defaultValue = "0") int page // Parámetro para el número de página
+    ) {
+        try {
+            // Crear el objeto de paginación
+            Pageable pageable = PageRequest.of(page, limit);
+
+            // Obtener las ventas paginadas desde el repositorio
+            Page<Sales> salesPage = SalesRepository.findByEntrepreneurshipId(entrepreneurshipId, pageable);
+
+            // Retornar la respuesta paginada
+            return ResponseEntity.ok(salesPage);
+        } catch (Exception e) {
+            // Manejar errores y devolver un mensaje genérico
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("An unexpected error occurred: " + e.getMessage());
         }
     }
 
