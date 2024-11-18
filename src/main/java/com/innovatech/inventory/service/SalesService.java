@@ -42,11 +42,6 @@ public class SalesService implements CrudService<Sales, Long>{
     
         return salesPage; 
     }
-
-    
-    public Page<Sales> findSalesByEntrepreneurshipId(Long entrepreneurshipId, Pageable pageable) {
-        return salesRepository.findByEntrepreneurshipId(entrepreneurshipId, pageable);
-    }
        
     @Override
     public void deleteById(Long id) {
@@ -54,18 +49,12 @@ public class SalesService implements CrudService<Sales, Long>{
         salesRepository.deleteById(id);
     }
 
-    @Override
     public Sales save(Sales sale) {
-        // Verificar que el producto no sea nulo
-        if (sale.getProduct() == null || sale.getProduct().getId() == null) {
-            throw new IllegalArgumentException("Product must not be null and must have a valid ID");
-        }
-
-        // Buscar el producto por ID para asegurarte de que existe en la base de datos
+        // Verificar que el producto existe
         Product product = productRepository.findById(sale.getProduct().getId())
-            .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + sale.getProduct().getId()));
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + sale.getProduct().getId()));
 
-        // Verificar que la cantidad vendida no exceda el stock
+        // Verificar que haya suficiente stock
         if (product.getQuantity() == null || sale.getQuantitySold() > product.getQuantity()) {
             throw new IllegalArgumentException("Insufficient stock for product: " + product.getId());
         }
@@ -74,7 +63,12 @@ public class SalesService implements CrudService<Sales, Long>{
         product.setQuantity(product.getQuantity() - sale.getQuantitySold());
         productRepository.save(product); // Guarda el producto actualizado
 
-        return salesRepository.save(sale); // Guarda la venta
+        // Guardar la venta
+        return salesRepository.save(sale);
+    }
+
+    public Page<Sales> findSalesByEntrepreneurshipId(Long entrepreneurshipId, Pageable pageable) {
+        return salesRepository.findByEntrepreneurshipId(entrepreneurshipId, pageable);
     }
 
 }               

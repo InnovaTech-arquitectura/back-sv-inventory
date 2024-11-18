@@ -1,10 +1,9 @@
 package com.innovatech.inventory.entity;
 
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.innovatech.inventory.dto.ProductSaleDTO;
 import jakarta.persistence.*;
 import lombok.*;
-
 
 @Entity
 @Table(name = "Sales")
@@ -15,56 +14,32 @@ import lombok.*;
 @AllArgsConstructor
 public class Sales {
 
-     @Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    // Relationship with table Order_State
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)  // Relación con Product
+    @JsonIgnore
     @JoinColumn(name = "id_product", referencedColumnName = "id")
     private Product product;
 
-    @Column(name = "quantity_sold") 
+    @Column(name = "quantity_sold")
     private int quantitySold;
 
-    @Column(name = "sale_number") 
-    private String saleNumber;
+    // Método para obtener el DTO del producto con solo id y name
+    public ProductSaleDTO getProductSaleDTO() {
+        if (product != null) {
+            return new ProductSaleDTO(product.getId(), product.getName());
+        }
+        return null;
+    }
 
-
-    // Constructor
-    public Sales(Product product, int quantitySold, String saleNumber) {
-        this.product = product;
+    // Constructor modificado para aceptar id y nombre del producto
+    public Sales(long productId, String productName, int quantitySold) {
+        this.product = new Product();  // o cargar el producto por ID
+        this.product.setId(productId);
+        this.product.setName(productName);
         this.quantitySold = quantitySold;
-        this.saleNumber = saleNumber;
-    }
 
-    // Getters y Setters
-    public Long getId() {
-        return id;
     }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
-    public int getQuantitySold() {
-        return quantitySold;
-    }
-
-    public void setQuantitySold(int quantitySold) {
-        this.quantitySold = quantitySold;
-    }
-
-    public String getSaleNumber() {
-        return saleNumber;
-    }    
-
-    public void setSaleNumber(String saleNumber) {
-        this.saleNumber = saleNumber;
-    }
-    
 }
